@@ -1,0 +1,156 @@
+---
+title: "Areas and Bounding Boxes"
+engine: julia
+---
+
+```{julia}
+#| echo: false
+#| output: false
+using GeodeticOps
+using CairoMakie
+import GeodeticOps: boundingbox
+```
+
+## Polygon Area
+
+`polygon_area` computes the area of a polygon on the ellipsoid in square meters.  The polygon is defined by an ordered sequence of vertices and is implicitly closed (the last vertex connects back to the first).
+
+The algorithm uses the **spherical excess** method on the **authalic (equal-area) sphere** -- a sphere with the same surface area as the ellipsoid.
+
+```{julia}
+# 1 deg x 1 deg square at the equator
+square = [LLA(0, 0), LLA(1, 0), LLA(1, 1), LLA(0, 1)]
+area = polygon_area(square)
+println("Area: $(round(area / 1e6, digits=0)) km^2")
+```
+
+```{julia}
+# A larger triangle
+triangle = [LLA(-10, 0), LLA(10, 0), LLA(0, 15)]
+area = polygon_area(triangle)
+println("Area: $(round(area / 1e6, digits=0)) km^2")
+```
+
+Vertex order matters for the sign of the spherical excess, but `polygon_area` returns the absolute value, so either winding order gives the same result:
+
+```{julia}
+polygon_area(reverse(square)) == polygon_area(square)
+```
+
+```{julia}
+#| label: fig-polygon
+#| fig-cap: "Three polygons with their computed areas. Polygon area varies with latitude even for the same angular extent."
+polygons = [
+    ("Equatorial square", [LLA(0, 0), LLA(5, 0), LLA(5, 5), LLA(0, 5)]),
+    ("Mid-latitude square", [LLA(0, 40), LLA(5, 40), LLA(5, 45), LLA(0, 45)]),
+    ("Triangle", [LLA(-5, 20), LLA(5, 20), LLA(0, 30)]),
+]
+colors = [:steelblue, :seagreen, :coral]
+
+fig = Figure(size=(700, 400))
+ax = Axis(fig[1, 1], xlabel="Longitude (deg)", ylabel="Latitude (deg)")
+for (i, (label, verts)) in enumerate(polygons)
+    lons = [v.lon for v in verts]
+    lats = [v.lat for v in verts]
+    # Close the polygon for plotting
+    push!(lons, lons[1])
+    push!(lats, lats[1])
+
+    poly!(ax, Point2f.(lons, lats), color=(colors[i], 0.3), strokecolor=colors[i], strokewidth=2)
+
+    area_km2 = round(polygon_area(verts) / 1e6, digits=0)
+    cx = sum(v.lon for v in verts) / length(verts)
+    cy = sum(v.lat for v in verts) / length(verts)
+    text!(ax, cx, cy; text="$(Int(area_km2)) km^2", fontsize=11, align=(:center, :center), color=colors[i])
+end
+fig
+```
+
+Notice that the mid-latitude square has a smaller area than the equatorial square of the same angular extent -- this reflects the convergence of meridians at higher latitudes.
+
+## Bounding Boxes
+
+A `BoundingBox` is an axis-aligned rectangle in longitude/latitude space:
+
+```{julia}
+bb = BoundingBox(-75.0, 40.0, -73.0, 41.0)
+```
+
+### From Points
+
+`boundingbox` computes the smallest bounding box containing a set of points:
+
+```{julia}
+pts = [LLA(-74.0, 40.0), LLA(-73.5, 40.8), LLA(-74.5, 40.3), LLA(-73.2, 40.5)]
+bb = boundingbox(pts)
+```
+
+### Containment
+
+Test whether a point lies within a bounding box:
+
+```{julia}
+in(LLA(-74.0, 40.5), bb)
+```
+
+```{julia}
+in(LLA(-72.0, 40.5), bb)
+```
+
+The `in` function handles **antimeridian wrapping** automatically.  If `min_lon > max_lon`, the box is assumed to wrap across the antimeridian.
+
+### Destination Bounding Box
+
+`destination_boundingbox` computes the bounding box of all points within a given distance from an origin.  This is useful for spatial queries ("find all records within 50 km"):
+
+```{julia}
+destination_boundingbox(LLA(-74.006, 40.7128), 50_000.0)
+```
+
+```{julia}
+#| label: fig-bbox
+#| fig-cap: "A bounding box around scattered points (left) and a destination bounding box showing the area within 500 km of a central point (right)."
+
+fig = Figure(size=(700, 350))
+
+# Left: bounding box from points
+pts = [
+    LLA(-74.0, 40.0), LLA(-73.5, 40.8), LLA(-74.5, 40.3),
+    LLA(-73.2, 40.5), LLA(-74.2, 40.9), LLA(-73.8, 40.1),
+]
+bb = boundingbox(pts)
+ax1 = Axis(fig[1, 1], xlabel="Longitude (deg)", ylabel="Latitude (deg)", title="Bounding Box")
+scatter!(ax1, [p.lon for p in pts], [p.lat for p in pts], color=:steelblue, markersize=10)
+box_lons = [bb.min_lon, bb.max_lon, bb.max_lon, bb.min_lon, bb.min_lon]
+box_lats = [bb.min_lat, bb.min_lat, bb.max_lat, bb.max_lat, bb.min_lat]
+lines!(ax1, box_lons, box_lats, color=:crimson, linewidth=2)
+
+# Right: destination bounding box
+origin = LLA(0.0, 45.0)
+dist = 500_000.0
+dbb = destination_boundingbox(origin, dist)
+ax2 = Axis(fig[1, 2], xlabel="Longitude (deg)", ylabel="Latitude (deg)", title="Destination Bounding Box")
+
+# Draw the "circle" of destinations
+ring = [forward_geodesic(origin, Float64(az), dist) for az in 0:5:360]
+poly!(ax2, Point2f.([p.lon for p in ring], [p.lat for p in ring]),
+    color=(:steelblue, 0.15), strokecolor=:steelblue, strokewidth=1.5)
+
+# Draw the bounding box
+dbox_lons = [dbb.min_lon, dbb.max_lon, dbb.max_lon, dbb.min_lon, dbb.min_lon]
+dbox_lats = [dbb.min_lat, dbb.min_lat, dbb.max_lat, dbb.max_lat, dbb.min_lat]
+lines!(ax2, dbox_lons, dbox_lats, color=:crimson, linewidth=2)
+scatter!(ax2, [origin.lon], [origin.lat], color=:crimson, markersize=10)
+text!(ax2, origin.lon + 0.3, origin.lat + 0.3; text="Origin", fontsize=11, align=(:left, :bottom))
+
+fig
+```
+
+### Accepts Any AbstractFixedCoords
+
+All functions accept any `AbstractFixedCoords` type, not just `LLA`.  ECEF and UTM coordinates are converted automatically:
+
+```{julia}
+ecef_pts = [ECEF(p, WGS84) for p in pts]
+boundingbox(ecef_pts)
+```

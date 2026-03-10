@@ -1,0 +1,197 @@
+---
+title: "Coordinates"
+engine: julia
+---
+
+```{julia}
+#| echo: false
+#| output: false
+using GeodeticOps, CairoMakie
+```
+
+GeodeticOps provides seven coordinate types organized into a type hierarchy that distinguishes *fixed* coordinates (those that describe a position on the ellipsoid) from *relative* coordinates (those measured from a local reference point).
+
+## Type Hierarchy
+
+```
+AbstractCoords{T}
+├── AbstractFixedCoords{T}       # convertible to LLA with only a Datum
+│   ├── LLA{T}                   # longitude, latitude (degrees), altitude
+│   ├── LLARad{T}                # longitude, latitude (radians), altitude
+│   ├── ECEF{T}                  # Earth-Centered, Earth-Fixed (x, y, z)
+│   └── UTM{T}                   # Universal Transverse Mercator
+└── AbstractRelativeCoords{T}    # require a reference point
+    ├── ENU{T}                   # East, North, Up
+    ├── NED{T}                   # North, East, Down
+    └── AER{T}                   # Azimuth, Elevation, Range
+```
+
+All geodetic operations (`distance`, `bearing`, `polygon_area`, etc.) accept any `AbstractFixedCoords`.  If you pass an `ECEF` or `UTM`, it is automatically converted to `LLA` internally.  Passing a relative coordinate type like `ENU` produces a compile-time method error.
+
+## Fixed Coordinate Types
+
+### LLA -- Geodetic Coordinates (Degrees)
+
+The most common type. Longitude and latitude are in degrees, altitude in meters above the ellipsoid.
+
+```{julia}
+LLA(-74.006, 40.7128)          # NYC, alt=0
+```
+
+```{julia}
+LLA(86.925, 27.988, 8848.86)   # Everest summit
+```
+
+### LLARad -- Geodetic Coordinates (Radians)
+
+Same as LLA but angles in radians. Converts to/from LLA without a datum:
+
+```{julia}
+r = LLARad(LLA(180.0, 45.0))
+```
+
+```{julia}
+LLA(r)
+```
+
+### ECEF -- Earth-Centered, Earth-Fixed
+
+Cartesian coordinates in meters with origin at the center of the ellipsoid.  Requires a datum for conversion:
+
+```{julia}
+ecef = ECEF(LLA(0.0, 0.0), WGS84)  # equator / prime meridian
+```
+
+```{julia}
+LLA(ecef, WGS84)
+```
+
+### UTM -- Universal Transverse Mercator
+
+Projected coordinates with zone number and hemisphere flag.  The zone is auto-detected from longitude:
+
+```{julia}
+utm = UTM(LLA(-74.006, 40.7128), WGS84)
+```
+
+```{julia}
+LLA(utm, WGS84)
+```
+
+You can force a specific zone:
+
+```{julia}
+UTM(LLA(-74.006, 40.7128), WGS84; zone=17)
+```
+
+## Relative Coordinate Types
+
+These describe positions relative to a local reference point.  They require both a reference `LLA` and a `Datum` for conversion.
+
+### ENU -- East-North-Up
+
+Local tangent plane with axes pointing east, north, and up:
+
+```{julia}
+ref = LLA(-74.006, 40.7128)              # NYC
+target = LLA(-73.996, 40.722, 50.0)
+enu = ENU(target, ref, WGS84)
+```
+
+```{julia}
+# Convert back
+LLA(enu, ref, WGS84)
+```
+
+### NED -- North-East-Down
+
+Aviation/aerospace convention. Related to ENU by a simple axis swap:
+
+```{julia}
+ned = NED(enu)  # no datum needed, pure axis reordering
+```
+
+```{julia}
+ENU(ned)        # round-trip
+```
+
+### AER -- Azimuth-Elevation-Range
+
+Spherical coordinates relative to a reference point.  Converts to/from ENU without a datum:
+
+```{julia}
+# Due north, 45 deg elevation, 1000 m range
+aer = AER(0.0, 45.0, 1000.0)
+ENU(aer)
+```
+
+```{julia}
+# From two LLA points
+AER(target, ref, WGS84)
+```
+
+## Conversion Map
+
+The diagram below shows all supported direct conversions. Arrows indicate constructors; dashed arrows require a datum, solid arrows do not.
+
+```
+LLA ←--→ LLARad          (no datum)
+LLA ←--→ ECEF            (datum)
+LLA ←--→ UTM             (datum)
+LLA ←--→ ENU ←--→ NED    (datum + ref)   (no datum)
+LLA ←--→ AER             (datum + ref)
+ENU ←--→ AER             (no datum)
+ECEF ←--→ ENU            (datum + ref)
+ECEF ←--→ UTM            (datum)
+```
+
+Every conversion is a constructor call:
+
+```{julia}
+p = LLA(-74.006, 40.7128)
+
+# Chain conversions
+p |> x -> ECEF(x, WGS84) |> x -> LLA(x, WGS84)
+```
+
+## Visualizing ECEF
+
+The plot below shows three cities converted to ECEF coordinates on a wireframe ellipsoid.
+
+```{julia}
+#| label: fig-ecef
+#| fig-cap: "Three cities plotted in ECEF coordinates on a wireframe ellipsoid (flattening exaggerated 50x for visibility)."
+a = 1.0
+f_exag = flattening(WGS84) * 50  # exaggerate flattening for visibility
+b = a * (1 - f_exag)
+
+theta = range(-pi/2, pi/2, 40)
+phi = range(0, 2pi, 80)
+X = [a * cos(t) * cos(p) for t in theta, p in phi]
+Y = [a * cos(t) * sin(p) for t in theta, p in phi]
+Z = [b * sin(t) for t in theta, p in phi]
+
+# Cities in normalized ECEF
+cities = [
+    ("NYC", LLA(-74.006, 40.7128)),
+    ("London", LLA(-0.1278, 51.5074)),
+    ("Tokyo", LLA(139.6917, 35.6895)),
+]
+scale = semi_major_axis(WGS84)
+city_ecefs = [(name, ECEF(lla, WGS84)) for (name, lla) in cities]
+
+fig = Figure(size=(600, 500))
+ax = Axis3(fig[1, 1], aspect=:data, xlabel="X", ylabel="Y", zlabel="Z")
+surface!(ax, X, Y, Z, alpha=0.2, colormap=[:lightblue, :lightblue], shading=NoShading)
+wireframe!(ax, X[1:4:end, 1:4:end], Y[1:4:end, 1:4:end], Z[1:4:end, 1:4:end],
+    color=(:steelblue, 0.3), linewidth=0.5)
+
+for (name, ecef) in city_ecefs
+    px, py, pz = ecef.x / scale, ecef.y / scale, ecef.z / scale
+    # Adjust for exaggerated flattening
+    pz_exag = pz * (b / (a * (1 - flattening(WGS84))))
+    scatter!(ax, [px], [py], [pz_exag], color=:crimson, markersize=12)
+    text!(ax, px, py, pz_exag; text=name, fontsize=12, align=(:left, :bottom), offset=(5, 5))
+end
+fig
+```

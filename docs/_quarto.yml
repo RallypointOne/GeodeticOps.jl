@@ -26,6 +26,9 @@ book:
       chapters:
         - index.qmd
         - getting-started.qmd
+        - coordinates.qmd
+        - geodesics.qmd
+        - areas-and-bounds.qmd
     - part: "API"
       chapters:
         - api.qmd

@@ -1,4 +1,5 @@
 [deps]
-JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
+CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 GeodeticOps = "d87b55ab-7a67-4b26-bb25-1f22980f9a10"
+JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 LocalCoverage = "5f6e1e16-694c-5876-87ef-16b5274f298e"

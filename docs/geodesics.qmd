@@ -1,0 +1,165 @@
+---
+title: "Geodesics"
+engine: julia
+---
+
+```{julia}
+#| echo: false
+#| output: false
+using GeodeticOps, CairoMakie
+```
+
+A **geodesic** is the shortest path between two points on the surface of an ellipsoid -- the curved-surface equivalent of a straight line.  On a flat map (equirectangular projection), geodesics appear as curves because the map distorts the ellipsoid's geometry.
+
+## Distance
+
+GeodeticOps provides two distance functions:
+
+| Function | Method | Accuracy | Speed |
+|----------|--------|----------|-------|
+| `haversine` | Great-circle on a sphere | ~0.5% | Fast |
+| `distance` | Vincenty on the ellipsoid | ~0.5 mm | Iterative |
+
+```{julia}
+nyc = LLA(-74.006, 40.7128)
+london = LLA(-0.1278, 51.5074)
+
+h = haversine(nyc, london)
+v = distance(nyc, london)
+
+println("Haversine: $(round(h / 1000, digits=1)) km")
+println("Vincenty:  $(round(v / 1000, digits=1)) km")
+println("Difference: $(round(abs(h - v) / 1000, digits=1)) km ($(round(abs(h - v) / v * 100, digits=2))%)")
+```
+
+For most applications, the difference is negligible.  Use `distance` (Vincenty) when sub-kilometer accuracy matters.
+
+## Bearing
+
+The **bearing** (or forward azimuth) is the initial direction of travel, measured in degrees clockwise from north:
+
+```{julia}
+bearing(nyc, london)
+```
+
+`forward_azimuth` is an alias for `bearing`.
+
+## The Inverse Problem
+
+`vincenty_inverse` returns the full solution to the inverse geodesic problem -- distance plus both azimuths:
+
+```{julia}
+vincenty_inverse(nyc, london)
+```
+
+The `azimuth2` field is the **reverse azimuth** at the destination (the direction you'd be facing when you arrive, measured clockwise from north).
+
+## The Forward Problem
+
+Given a starting point, bearing, and distance, `forward_geodesic` computes the destination:
+
+```{julia}
+# 500 km northeast from NYC
+forward_geodesic(nyc, 45.0, 500_000.0)
+```
+
+The plot below shows destinations at every 15 degrees of bearing from a point at 45 deg N.  Notice the asymmetry: east/west destinations span more longitude than north/south destinations span latitude, because meridians converge toward the poles.
+
+```{julia}
+#| label: fig-compass
+#| fig-cap: "Destinations 1500 km from 45 deg N, 0 deg E at bearings 0 deg through 345 deg.  The asymmetry reflects meridian convergence at higher latitudes."
+origin = LLA(0.0, 45.0)
+dist = 1_500_000.0
+bearings_deg = 0:15:345
+dests = [forward_geodesic(origin, az, dist) for az in bearings_deg]
+
+fig = Figure(size=(550, 500))
+ax = Axis(fig[1, 1], xlabel="Longitude (deg)", ylabel="Latitude (deg)", aspect=DataAspect())
+for d in dests
+    lines!(ax, [origin.lon, d.lon], [origin.lat, d.lat], color=(:steelblue, 0.4), linewidth=1)
+end
+scatter!(ax, [d.lon for d in dests], [d.lat for d in dests], color=:steelblue, markersize=8)
+scatter!(ax, [origin.lon], [origin.lat], color=:crimson, markersize=14)
+text!(ax, origin.lon + 0.5, origin.lat + 0.5; text="Origin", fontsize=12, align=(:left, :bottom))
+
+# Label cardinal directions
+for (az, label) in [(0, "N"), (90, "E"), (180, "S"), (270, "W")]
+    d = forward_geodesic(origin, Float64(az), dist)
+    text!(ax, d.lon, d.lat; text=label, fontsize=13, align=(:center, :center),
+        color=:gray30, offset=(0, 12))
+end
+fig
+```
+
+## Interpolation
+
+`intermediate_point` returns the point at a given fraction along the geodesic.  `midpoint` is a shortcut for fraction = 0.5.
+
+```{julia}
+tokyo = LLA(139.6917, 35.6895)
+
+midpoint(nyc, tokyo)
+```
+
+```{julia}
+# Points at 0%, 25%, 50%, 75%, 100%
+for f in 0.0:0.25:1.0
+    p = intermediate_point(nyc, london, f)
+    println("f=$f: $p")
+end
+```
+
+```{julia}
+#| label: fig-interpolation
+#| fig-cap: "Twenty evenly-spaced intermediate points along the geodesic from New York City to London.  Color indicates fraction along the path."
+fracs = range(0, 1, 20)
+pts = [intermediate_point(nyc, london, f) for f in fracs]
+lons = [p.lon for p in pts]
+lats = [p.lat for p in pts]
+
+fig = Figure(size=(700, 350))
+ax = Axis(fig[1, 1], xlabel="Longitude (deg)", ylabel="Latitude (deg)")
+scatter!(ax, lons, lats, color=collect(fracs), colormap=:viridis, markersize=10)
+Colorbar(fig[1, 2], colormap=:viridis, limits=(0, 1), label="Fraction")
+text!(ax, lons[1] - 1, lats[1] - 1.5; text="NYC", fontsize=13, align=(:center, :top))
+text!(ax, lons[end] + 1.5, lats[end] + 0.5; text="London", fontsize=13, align=(:left, :bottom))
+fig
+```
+
+## Geodesic vs. Rhumb Line
+
+A **rhumb line** (loxodrome) crosses all meridians at the same angle -- it appears as a straight line on a Mercator map.  A geodesic is shorter but changes bearing continuously.
+
+```{julia}
+#| label: fig-geodesic-vs-rhumb
+#| fig-cap: "Geodesic (blue) versus rhumb line (gray dashed) for three city pairs.  The geodesic always curves toward the nearer pole."
+pairs = [
+    (LLA(-74.006, 40.7128), LLA(-0.1278, 51.5074), "NYC", "London"),
+    (LLA(-122.4194, 37.7749), LLA(139.6917, 35.6895), "SF", "Tokyo"),
+    (LLA(-43.1729, -22.9068), LLA(18.4241, -33.9249), "Rio", "Cape Town"),
+]
+
+fig = Figure(size=(700, 700))
+for (i, (a, b, name_a, name_b)) in enumerate(pairs)
+    ax = Axis(fig[i, 1], xlabel= i == 3 ? "Longitude (deg)" : "", ylabel="Latitude (deg)",
+        title="$name_a to $name_b")
+
+    # Geodesic
+    n = 100
+    geo = [intermediate_point(a, b, f) for f in range(0, 1, n)]
+    lines!(ax, [p.lon for p in geo], [p.lat for p in geo], color=:steelblue, linewidth=2.5, label="Geodesic")
+
+    # Rhumb line
+    lines!(ax, collect(range(a.lon, b.lon, n)), collect(range(a.lat, b.lat, n)),
+        color=:gray60, linewidth=1.5, linestyle=:dash, label="Rhumb line")
+
+    scatter!(ax, [a.lon, b.lon], [a.lat, b.lat], color=:crimson, markersize=10)
+    text!(ax, a.lon, a.lat; text=name_a, fontsize=11, offset=(0, -12), align=(:center, :top))
+    text!(ax, b.lon, b.lat; text=name_b, fontsize=11, offset=(0, 8), align=(:center, :bottom))
+
+    i == 1 && axislegend(ax, position=:rb)
+end
+fig
+```
+
+Note: The San Francisco to Tokyo geodesic curves far northward over the Pacific -- this is why transpacific flights follow polar routes.

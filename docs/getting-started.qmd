@@ -1,11 +1,172 @@
-# Getting Started {.unnumbered}
+---
+title: "Getting Started"
+engine: julia
+---
 
-## Basic Usage
-
-```julia
+```{julia}
+#| echo: false
+#| output: false
 using GeodeticOps
 ```
 
-## Examples
+This tutorial walks through the core features of GeodeticOps.jl.
 
-*TODO: Add examples here.*
+## Creating Coordinates
+
+The most common coordinate type is `LLA` (longitude, latitude, altitude):
+
+```{julia}
+# New York City (altitude defaults to 0)
+nyc = LLA(-74.006, 40.7128)
+```
+
+```{julia}
+# Mount Everest summit
+everest = LLA(86.925, 27.988, 8848.86)
+```
+
+All coordinate types are parametric.  The type parameter promotes automatically:
+
+```{julia}
+LLA(1, 2, 3)        # Int
+```
+
+```{julia}
+LLA(1.0f0, 2.0f0)   # Float32
+```
+
+```{julia}
+LLA{Float32}(1, 2)   # Explicit type parameter
+```
+
+## Datums
+
+A `Datum` defines the shape of the reference ellipsoid.  GeodeticOps exports four common datums:
+
+```{julia}
+for d in [WGS84, GRS80, CLARKE1866, WGS72]
+    println(d)
+end
+```
+
+All operations default to WGS84.  You can override per-call with the `datum` keyword, or change the global default via `DEFAULT_DATUM[]`:
+
+```{julia}
+# Per-call override
+distance(nyc, LLA(-0.1278, 51.5074); datum=GRS80)
+```
+
+```{julia}
+# Change the global default
+DEFAULT_DATUM[] = GRS80
+DEFAULT_DATUM[]
+```
+
+```{julia}
+# Restore WGS84
+DEFAULT_DATUM[] = WGS84
+```
+
+## Measuring Distances
+
+**Haversine** gives a fast great-circle approximation:
+
+```{julia}
+london = LLA(-0.1278, 51.5074)
+haversine(nyc, london)
+```
+
+**Vincenty** is more accurate, accounting for the ellipsoid:
+
+```{julia}
+distance(nyc, london)
+```
+
+The two methods agree to within ~0.5% for most distances.
+
+## Bearing
+
+Compute the initial bearing (forward azimuth) from one point to another:
+
+```{julia}
+bearing(nyc, london)  # degrees clockwise from north
+```
+
+## Computing Destinations
+
+Given a starting point, bearing, and distance, find the destination:
+
+```{julia}
+# 1000 km due north from the equator
+forward_geodesic(LLA(0.0, 0.0), 0.0, 1_000_000.0)
+```
+
+## Interpolation Along a Geodesic
+
+Find the point at any fraction along a geodesic path:
+
+```{julia}
+tokyo = LLA(139.6917, 35.6895)
+
+midpoint(nyc, tokyo)
+```
+
+```{julia}
+# Quarter-way point
+intermediate_point(nyc, tokyo, 0.25)
+```
+
+## Coordinate Conversions
+
+Convert between any supported coordinate types:
+
+```{julia}
+# LLA to ECEF (Earth-Centered, Earth-Fixed)
+ecef = ECEF(nyc, WGS84)
+```
+
+```{julia}
+# ECEF back to LLA
+LLA(ecef, WGS84)
+```
+
+```{julia}
+# LLA to UTM
+utm = UTM(nyc, WGS84)
+```
+
+Local coordinate frames (ENU, NED, AER) require a reference point:
+
+```{julia}
+# Displacement from NYC to a nearby point in East-North-Up
+nearby = LLA(-73.996, 40.722, 50.0)
+ENU(nearby, nyc, WGS84)
+```
+
+See [Coordinates](coordinates.qmd) for the full list of types and conversion paths.
+
+## Polygon Area
+
+Compute the area of a polygon on the ellipsoid:
+
+```{julia}
+# Approximate area of a 1 deg x 1 deg square at the equator
+pts = [LLA(0, 0), LLA(1, 0), LLA(1, 1), LLA(0, 1)]
+area_km2 = polygon_area(pts) / 1e6
+println("$(round(area_km2, digits=0)) km^2")
+```
+
+## Bounding Boxes
+
+Compute the bounding box of a set of points:
+
+```{julia}
+pts = [LLA(-74.0, 40.0), LLA(-73.0, 41.0), LLA(-75.0, 40.5)]
+boundingbox(pts)
+```
+
+Or find the bounding box of all points within a given distance:
+
+```{julia}
+destination_boundingbox(nyc, 50_000.0)  # 50 km radius
+```

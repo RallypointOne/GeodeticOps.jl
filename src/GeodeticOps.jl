@@ -1,60 +1,28 @@
 module GeodeticOps
 
-export greet, Config, transform, DEFAULT_GREETING
+export Datum, semi_major_axis, semi_minor_axis, flattening, eccentricity_sq, eccentricity,
+    WGS84, GRS80, CLARKE1866, WGS72
 
-"""
-    Config
+export DEFAULT_DATUM
 
-Configuration for the package.
+export AbstractCoords, AbstractFixedCoords, AbstractRelativeCoords,
+    LLA, LLARad, ECEF, ENU, NED, AER, UTM
 
-# Fields
-- `name::String`: The name to use in greetings.
-- `verbose::Bool`: Whether to print extra information.
-"""
-struct Config
-    name::String
-    verbose::Bool
-end
+export haversine
+export vincenty_inverse, distance, forward_azimuth, bearing
+export forward_geodesic
+export intermediate_point, midpoint
+export BoundingBox, boundingbox, destination_boundingbox
+export polygon_area
 
-"""
-    greet()
-    greet(name::String)
-
-Return a greeting string. If `name` is provided, greet that person.
-
-### Examples
-```julia
-julia> greet()
-"Hello from GeodeticOps!"
-
-julia> greet("Julia")
-"Hello, Julia!"
-```
-"""
-greet() = "Hello from GeodeticOps!"
-greet(name::String) = "Hello, $name!"
-
-"""
-    transform(x::AbstractVector; scale=1.0)
-
-Apply a transformation to `x`, scaling each element by `scale`.
-
-### Examples
-```julia
-julia> transform([1, 2, 3]; scale=2.0)
-3-element Vector{Float64}:
- 2.0
- 4.0
- 6.0
-```
-"""
-transform(x::AbstractVector; scale=1.0) = x .* scale
-
-"""
-    DEFAULT_GREETING
-
-The default greeting string used by [`greet`](@ref).
-"""
-const DEFAULT_GREETING = "Hello from GeodeticOps!"
+include("datum.jl")
+include("coords.jl")
+include("utils.jl")
+include("haversine.jl")
+include("vincenty.jl")
+include("forward_geodesic.jl")
+include("interpolate.jl")
+include("boundingbox.jl")
+include("area.jl")
 
 end # module

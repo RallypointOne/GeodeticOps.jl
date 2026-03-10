@@ -1,12 +1,25 @@
 ---
 title: "GeodeticOps.jl"
+engine: julia
 ---
 
-Welcome to the documentation for **GeodeticOps.jl**.
+```{julia}
+#| echo: false
+#| output: false
+using GeodeticOps, CairoMakie
+```
 
-## Overview
+**GeodeticOps.jl** is a pure-Julia package for geodetic computations on Earth's ellipsoid.
 
-GeodeticOps.jl provides geodetic operations and coordinate transformations for Julia.
+## Features
+
+- **7 coordinate types** with automatic conversions: LLA, LLARad, ECEF, ENU, NED, AER, UTM
+- **Geodesic distances**: Haversine (great-circle) and Vincenty (ellipsoidal)
+- **Forward and inverse geodesic problems** via Vincenty's formulae
+- **Geodesic interpolation**: intermediate points and midpoints along geodesics
+- **Polygon area** on the ellipsoid using spherical excess
+- **Bounding boxes**: axis-aligned and distance-based
+- **Multiple datums**: WGS84 (default), GRS80, Clarke 1866, WGS72
 
 ## Installation
 
@@ -15,8 +28,41 @@ using Pkg
 Pkg.add("GeodeticOps")
 ```
 
-## Quickstart
+## Quick Example
 
 ```{julia}
-println("Hello, World!")
+using GeodeticOps
+
+nyc = LLA(-74.006, 40.7128)
+london = LLA(-0.1278, 51.5074)
+
+d = distance(nyc, london)
+println("NYC -> London: $(round(d / 1000, digits=1)) km")
+println("Bearing:       $(round(bearing(nyc, london), digits=1))deg")
+println("Midpoint:      $(midpoint(nyc, london))")
+```
+
+All operations default to WGS84.  Pass `datum=GRS80` (or any `Datum`) to override, or set `DEFAULT_DATUM[] = GRS80` to change the global default.
+
+```{julia}
+#| echo: false
+#| label: fig-hero
+#| fig-cap: "Geodesic path (blue) versus rhumb line (dashed gray) from New York City to London.  The geodesic curves northward because it follows the shortest path on the ellipsoid."
+n = 100
+geo = [intermediate_point(nyc, london, f) for f in range(0, 1, n)]
+geo_lons = [p.lon for p in geo]
+geo_lats = [p.lat for p in geo]
+
+rhumb_lons = collect(range(nyc.lon, london.lon, n))
+rhumb_lats = collect(range(nyc.lat, london.lat, n))
+
+fig = Figure(size=(700, 350))
+ax = Axis(fig[1, 1], xlabel="Longitude (deg)", ylabel="Latitude (deg)")
+lines!(ax, rhumb_lons, rhumb_lats, color=:gray60, linewidth=1.5, linestyle=:dash, label="Rhumb line")
+lines!(ax, geo_lons, geo_lats, color=:steelblue, linewidth=2.5, label="Geodesic")
+scatter!(ax, [nyc.lon, london.lon], [nyc.lat, london.lat], color=:crimson, markersize=12)
+text!(ax, nyc.lon, nyc.lat - 1.8; text="NYC", fontsize=13, align=(:center, :top))
+text!(ax, london.lon + 1.5, london.lat + 0.5; text="London", fontsize=13, align=(:left, :bottom))
+axislegend(ax, position=:rb)
+fig
 ```
