@@ -1,18 +1,18 @@
 ---
-title: "JuliaPackageTemplate.jl"
+title: "GeodeticOps.jl"
 ---
 
-Welcome to the documentation for **JuliaPackageTemplate.jl**.
+Welcome to the documentation for **GeodeticOps.jl**.
 
 ## Overview
 
-JuliaPackageTemplate.jl is a Julia package that ...
+GeodeticOps.jl provides geodetic operations and coordinate transformations for Julia.
 
 ## Installation
 
 ```julia
 using Pkg
-Pkg.add("JuliaPackageTemplate")
+Pkg.add("GeodeticOps")
 ```
 
 ## Quickstart

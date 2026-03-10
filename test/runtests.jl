@@ -1,6 +1,6 @@
-using JuliaPackageTemplate
+using GeodeticOps
 using Test
 
-@testset "JuliaPackageTemplate.jl" begin
-    @test JuliaPackageTemplate.greet() == "Hello from JuliaPackageTemplate!"
+@testset "GeodeticOps.jl" begin
+    @test GeodeticOps.greet() == "Hello from GeodeticOps!"
 end
