@@ -23,6 +23,19 @@ using Test
         @test GRS80.f_inv != WGS84.f_inv
     end
 
+    @testset "CLARKE1866 derived quantities" begin
+        @test semi_major_axis(CLARKE1866) == 6_378_206.4
+        @test flattening(CLARKE1866) ≈ 1.0 / 294.978698214
+        @test semi_minor_axis(CLARKE1866) < semi_major_axis(CLARKE1866)
+        @test eccentricity(CLARKE1866) > 0.0
+    end
+
+    @testset "WGS72 derived quantities" begin
+        @test semi_major_axis(WGS72) == 6_378_135.0
+        @test WGS72.f_inv == 298.26
+        @test semi_minor_axis(WGS72) < semi_major_axis(WGS72)
+    end
+
     @testset "show method" begin
         s = sprint(show, WGS84)
         @test contains(s, "WGS 84")
@@ -135,6 +148,11 @@ using Test
             c32 = ENU(1.0f0, 2.0f0, 3.0f0)
             @test c32 isa ENU{Float32}
         end
+        @testset "explicit type parameter" begin
+            c = ENU{Float32}(1, 2, 3)
+            @test c isa ENU{Float32}
+            @test c.e === 1.0f0
+        end
         @testset "show" begin
             s = sprint(show, ENU(1.0, 2.0, 3.0))
             @test contains(s, "e=1.0")
@@ -150,6 +168,17 @@ using Test
             @test c.e == 2.0
             @test c.d == 3.0
             @test c isa NED{Float64}
+        end
+        @testset "type promotion" begin
+            c = NED(1, 2, 3)
+            @test c isa NED{Int}
+            c_mixed = NED(1, 2.0, 3)
+            @test c_mixed isa NED{Float64}
+        end
+        @testset "explicit type parameter" begin
+            c = NED{Float32}(1, 2, 3)
+            @test c isa NED{Float32}
+            @test c.n === 1.0f0
         end
         @testset "ENU ↔ NED" begin
             enu = ENU(10.0, 20.0, 30.0)
@@ -178,6 +207,17 @@ using Test
             @test c.range == 1000.0
             @test c isa AER{Float64}
         end
+        @testset "type promotion" begin
+            c = AER(45, 30, 1000)
+            @test c isa AER{Int}
+            c_mixed = AER(45, 30.0, 1000)
+            @test c_mixed isa AER{Float64}
+        end
+        @testset "explicit type parameter" begin
+            c = AER{Float32}(45, 30, 1000)
+            @test c isa AER{Float32}
+            @test c.az === 45.0f0
+        end
         @testset "show" begin
             s = sprint(show, AER(45.0, 30.0, 1000.0))
             @test contains(s, "az=45.0")
@@ -194,6 +234,17 @@ using Test
             @test c.easting == 583960.0
             @test c.northing == 4507523.0
             @test c isa UTM{Float64}
+        end
+        @testset "type promotion" begin
+            c = UTM(18, true, 583960, 4507523)
+            @test c isa UTM{Int}
+            c_mixed = UTM(18, true, 583960, 4507523.0)
+            @test c_mixed isa UTM{Float64}
+        end
+        @testset "explicit type parameter" begin
+            c = UTM{Float32}(18, true, 583960, 4507523)
+            @test c isa UTM{Float32}
+            @test c.easting === 583960.0f0
         end
         @testset "show" begin
             s = sprint(show, UTM(18, true, 583960.0, 4507523.0))
@@ -272,6 +323,26 @@ using Test
             @test abs(ecef.x) < 1e-6
             @test abs(ecef.y) < 1e-6
             @test ecef.z ≈ semi_minor_axis(WGS84)
+        end
+        @testset "LLA → ECEF south pole" begin
+            lla = LLA(0.0, -90.0, 0.0)
+            ecef = ECEF(lla, WGS84)
+            @test abs(ecef.x) < 1e-6
+            @test abs(ecef.y) < 1e-6
+            @test ecef.z ≈ -semi_minor_axis(WGS84)
+        end
+        @testset "LLA → ECEF 90° longitude" begin
+            lla = LLA(90.0, 0.0, 0.0)
+            ecef = ECEF(lla, WGS84)
+            @test abs(ecef.x) < 1e-6
+            @test ecef.y ≈ semi_major_axis(WGS84)
+            @test abs(ecef.z) < 1e-6
+        end
+        @testset "LLA → ECEF with non-default datum" begin
+            lla = LLA(0.0, 0.0, 0.0)
+            ecef = ECEF(lla, CLARKE1866)
+            @test ecef.x ≈ semi_major_axis(CLARKE1866)
+            @test ecef.x != semi_major_axis(WGS84)
         end
         @testset "LLA → ECEF → LLA round-trip" begin
             orig = LLA(-74.006, 40.7128, 10.0)
@@ -427,6 +498,117 @@ using Test
             @test utm.zone == 18
             @test utm.easting ≈ UTM(orig, WGS84).easting atol=1e-6
         end
+        @testset "UTM → ECEF" begin
+            orig = LLA(-74.006, 40.7128)
+            utm = UTM(orig, WGS84)
+            ecef_from_utm = ECEF(utm, WGS84)
+            ecef_from_lla = ECEF(orig, WGS84)
+            @test ecef_from_utm.x ≈ ecef_from_lla.x atol=1.0
+            @test ecef_from_utm.y ≈ ecef_from_lla.y atol=1.0
+            @test ecef_from_utm.z ≈ ecef_from_lla.z atol=1.0
+        end
+        @testset "UTM zone at 180° longitude" begin
+            lla = LLA(179.5, 10.0)
+            utm = UTM(lla, WGS84)
+            @test utm.zone == 60
+        end
+        @testset "ENU: point due up" begin
+            ref = LLA(0.0, 0.0, 0.0)
+            up_point = LLA(0.0, 0.0, 1000.0)
+            enu = ENU(up_point, ref, WGS84)
+            @test abs(enu.e) < 1.0
+            @test abs(enu.n) < 1.0
+            @test enu.u ≈ 1000.0 atol=1.0
+        end
+        @testset "ECEF → ENU direct" begin
+            ref = LLA(-74.006, 40.7128, 0.0)
+            point = LLA(-73.996, 40.7228, 50.0)
+            ecef = ECEF(point, WGS84)
+            enu_from_lla = ENU(point, ref, WGS84)
+            enu_from_ecef = ENU(ecef, ref, WGS84)
+            @test enu_from_ecef.e ≈ enu_from_lla.e atol=1e-6
+            @test enu_from_ecef.n ≈ enu_from_lla.n atol=1e-6
+            @test enu_from_ecef.u ≈ enu_from_lla.u atol=1e-6
+        end
+        @testset "ECEF → NED direct" begin
+            ref = LLA(0.0, 0.0, 0.0)
+            point = LLA(0.001, 0.001, 100.0)
+            ecef = ECEF(point, WGS84)
+            ned_from_lla = NED(point, ref, WGS84)
+            ned_from_ecef = NED(ecef, ref, WGS84)
+            @test ned_from_ecef.n ≈ ned_from_lla.n atol=1e-6
+            @test ned_from_ecef.e ≈ ned_from_lla.e atol=1e-6
+            @test ned_from_ecef.d ≈ ned_from_lla.d atol=1e-6
+        end
+        @testset "NED → ECEF" begin
+            ref = LLA(-74.006, 40.7128, 0.0)
+            orig = LLA(-73.996, 40.7228, 50.0)
+            ned = NED(orig, ref, WGS84)
+            ecef_rt = ECEF(ned, ref, WGS84)
+            ecef_orig = ECEF(orig, WGS84)
+            @test ecef_rt.x ≈ ecef_orig.x atol=1e-4
+            @test ecef_rt.y ≈ ecef_orig.y atol=1e-4
+            @test ecef_rt.z ≈ ecef_orig.z atol=1e-4
+        end
+        @testset "AER → ECEF" begin
+            ref = LLA(-74.006, 40.7128, 0.0)
+            orig = LLA(-73.996, 40.7228, 50.0)
+            aer = AER(orig, ref, WGS84)
+            ecef_rt = ECEF(aer, ref, WGS84)
+            ecef_orig = ECEF(orig, WGS84)
+            @test ecef_rt.x ≈ ecef_orig.x atol=1e-4
+            @test ecef_rt.y ≈ ecef_orig.y atol=1e-4
+            @test ecef_rt.z ≈ ecef_orig.z atol=1e-4
+        end
+        @testset "AER from ECEF" begin
+            ref = LLA(0.0, 0.0, 0.0)
+            point = LLA(0.001, 0.0, 0.0)
+            aer_from_lla = AER(point, ref, WGS84)
+            ecef = ECEF(point, WGS84)
+            aer_from_ecef = AER(ecef, ref, WGS84)
+            @test aer_from_ecef.az ≈ aer_from_lla.az atol=1e-6
+            @test aer_from_ecef.el ≈ aer_from_lla.el atol=1e-6
+            @test aer_from_ecef.range ≈ aer_from_lla.range atol=1e-6
+        end
+        @testset "AER ↔ NED round-trip" begin
+            aer = AER(45.0, 30.0, 1000.0)
+            ned = NED(aer)
+            aer2 = AER(ned)
+            @test aer2.az ≈ aer.az atol=1e-10
+            @test aer2.el ≈ aer.el atol=1e-10
+            @test aer2.range ≈ aer.range atol=1e-10
+        end
+        @testset "LLARad → ECEF → LLARad round-trip" begin
+            orig = LLARad(deg2rad(-74.006), deg2rad(40.7128), 10.0)
+            ecef = ECEF(orig, WGS84)
+            rt = LLARad(ecef, WGS84)
+            @test rt.lon ≈ orig.lon atol=1e-10
+            @test rt.lat ≈ orig.lat atol=1e-10
+            @test rt.alt ≈ orig.alt atol=1e-6
+        end
+        @testset "LLA → ECEF → LLA round-trip (multiple locations)" begin
+            locations = [
+                LLA(139.6917, 35.6895, 0.0),    # Tokyo
+                LLA(-43.1729, -22.9068, 0.0),    # Rio
+                LLA(37.6173, 55.7558, 200.0),    # Moscow
+                LLA(-180.0, 0.0, 0.0),           # Antimeridian
+                LLA(0.0, -90.0, 0.0),            # South pole
+            ]
+            for orig in locations
+                rt = LLA(ECEF(orig, WGS84), WGS84)
+                @test rt.lon ≈ orig.lon atol=1e-8
+                @test rt.lat ≈ orig.lat atol=1e-8
+                @test rt.alt ≈ orig.alt atol=1e-4
+            end
+        end
+        @testset "UTM with GRS80 datum" begin
+            nyc = LLA(-74.006, 40.7128)
+            utm_wgs84 = UTM(nyc, WGS84)
+            utm_grs80 = UTM(nyc, GRS80)
+            # GRS80 and WGS84 are very close, so UTM should be nearly identical
+            @test utm_wgs84.zone == utm_grs80.zone
+            @test utm_wgs84.easting ≈ utm_grs80.easting atol=0.01
+        end
     end
 
     @testset "haversine" begin
@@ -463,6 +645,25 @@ using Test
             b = LLA(-0.1278, 51.5074)
             @test haversine(a, b; datum=GRS80) ≈ haversine(a, b) rtol=1e-6
         end
+        @testset "short distance" begin
+            # Two points ~11m apart
+            a = LLA(0.0, 0.0)
+            b = LLA(0.0001, 0.0)
+            d = haversine(a, b)
+            @test d ≈ 11.1 atol=1.0
+        end
+        @testset "accepts UTM" begin
+            nyc_lla = LLA(-74.006, 40.7128)
+            nyc_utm = UTM(nyc_lla, WGS84)
+            london = LLA(-0.1278, 51.5074)
+            @test haversine(nyc_utm, london) ≈ haversine(nyc_lla, london) atol=10.0
+        end
+        @testset "accepts LLARad" begin
+            a_lla = LLA(-74.006, 40.7128)
+            a_rad = LLARad(a_lla)
+            b = LLA(-0.1278, 51.5074)
+            @test haversine(a_rad, b) ≈ haversine(a_lla, b) atol=1.0
+        end
     end
 
     @testset "vincenty_inverse" begin
@@ -497,6 +698,36 @@ using Test
             b_rad = LLARad(LLA(-0.1278, 51.5074))
             d = distance(a_ecef, b_rad)
             @test d > 5.5e6
+        end
+        @testset "near-antipodal fallback" begin
+            # Nearly antipodal points may not converge; should fall back to haversine
+            a = LLA(0.0, 89.999)
+            b = LLA(180.0, -89.999)
+            inv = vincenty_inverse(a, b)
+            @test inv.distance > 0.0
+        end
+        @testset "due west azimuth" begin
+            az = forward_azimuth(LLA(0.0, 0.0), LLA(-1.0, 0.0))
+            @test az ≈ 270.0 atol=0.01
+        end
+        @testset "due south azimuth" begin
+            az = forward_azimuth(LLA(0.0, 0.0), LLA(0.0, -1.0))
+            @test az ≈ 180.0 atol=0.01
+        end
+        @testset "with non-default datum" begin
+            a = LLA(-74.006, 40.7128)
+            b = LLA(-0.1278, 51.5074)
+            d_wgs84 = distance(a, b)
+            d_grs80 = distance(a, b; datum=GRS80)
+            @test d_grs80 ≈ d_wgs84 rtol=1e-6
+        end
+        @testset "accepts UTM" begin
+            a = LLA(-74.006, 40.7128)
+            b = LLA(-73.935, 40.730)
+            a_utm = UTM(a, WGS84)
+            d_lla = distance(a, b)
+            d_utm = distance(a_utm, b)
+            @test d_utm ≈ d_lla atol=1.0
         end
     end
 
@@ -540,6 +771,40 @@ using Test
             dest = forward_geodesic(ecef, 0.0, 110_574.0)
             @test dest.lat ≈ 1.0 atol=0.01
         end
+        @testset "due south at equator" begin
+            dest = forward_geodesic(LLA(0.0, 0.0), 180.0, 110_574.0)
+            @test abs(dest.lon) < 0.01
+            @test dest.lat ≈ -1.0 atol=0.01
+        end
+        @testset "due west at equator" begin
+            dest = forward_geodesic(LLA(0.0, 0.0), 270.0, 111_320.0)
+            @test dest.lon ≈ -1.0 atol=0.01
+            @test abs(dest.lat) < 0.01
+        end
+        @testset "zero distance returns origin" begin
+            origin = LLA(-74.006, 40.7128)
+            dest = forward_geodesic(origin, 45.0, 0.0)
+            @test dest.lon ≈ origin.lon atol=1e-10
+            @test dest.lat ≈ origin.lat atol=1e-10
+        end
+        @testset "long distance (NYC to London)" begin
+            # NYC to London is ~5570 km at azimuth ~51°
+            dest = forward_geodesic(LLA(-74.006, 40.7128), 51.2, 5.570e6)
+            @test dest.lon ≈ -0.1278 atol=1.0
+            @test dest.lat ≈ 51.5074 atol=1.0
+        end
+        @testset "with non-default datum" begin
+            dest_wgs = forward_geodesic(LLA(0.0, 0.0), 90.0, 111_320.0; datum=WGS84)
+            dest_grs = forward_geodesic(LLA(0.0, 0.0), 90.0, 111_320.0; datum=GRS80)
+            @test dest_wgs.lon ≈ dest_grs.lon atol=1e-6
+        end
+        @testset "accepts UTM" begin
+            origin_lla = LLA(0.0, 0.0)
+            origin_utm = UTM(origin_lla, WGS84)
+            dest_from_lla = forward_geodesic(origin_lla, 90.0, 111_320.0)
+            dest_from_utm = forward_geodesic(origin_utm, 90.0, 111_320.0)
+            @test dest_from_utm.lon ≈ dest_from_lla.lon atol=1e-6
+        end
     end
 
     @testset "intermediate_point / midpoint" begin
@@ -567,6 +832,28 @@ using Test
             d_am = distance(a, m)
             d_mb = distance(m, b)
             @test d_am ≈ d_mb rtol=0.001
+        end
+        @testset "quarter and three-quarter points" begin
+            a = LLA(0.0, 0.0)
+            b = LLA(10.0, 0.0)
+            total = distance(a, b)
+            q1 = intermediate_point(a, b, 0.25)
+            q3 = intermediate_point(a, b, 0.75)
+            @test distance(a, q1) ≈ total * 0.25 rtol=0.01
+            @test distance(a, q3) ≈ total * 0.75 rtol=0.01
+        end
+        @testset "accepts AbstractFixedCoords" begin
+            a_ecef = ECEF(LLA(0.0, 0.0), WGS84)
+            b = LLA(10.0, 0.0)
+            m = midpoint(a_ecef, b)
+            @test m.lon ≈ 5.0 atol=0.01
+        end
+        @testset "midpoint with non-default datum" begin
+            a = LLA(0.0, 0.0)
+            b = LLA(10.0, 0.0)
+            m_wgs = midpoint(a, b)
+            m_grs = midpoint(a, b; datum=GRS80)
+            @test m_wgs.lon ≈ m_grs.lon atol=1e-6
         end
     end
 
@@ -597,6 +884,19 @@ using Test
             @test bb.min_lat == 40.0
             @test bb.max_lat == 41.0
         end
+        @testset "antimeridian wrapping containment" begin
+            # Box wrapping around 180°: min_lon > max_lon
+            bb = BoundingBox(170.0, -10.0, -170.0, 10.0)
+            @test in(LLA(175.0, 0.0), bb)    # east of antimeridian
+            @test in(LLA(-175.0, 0.0), bb)   # west of antimeridian
+            @test !in(LLA(0.0, 0.0), bb)     # far from antimeridian
+        end
+        @testset "boundary containment" begin
+            bb = BoundingBox(-75.0, 40.0, -73.0, 41.0)
+            @test in(LLA(-75.0, 40.0), bb)   # min corner
+            @test in(LLA(-73.0, 41.0), bb)   # max corner
+            @test in(LLA(-74.0, 40.0), bb)   # on min_lat edge
+        end
         @testset "destination_boundingbox" begin
             bb = destination_boundingbox(LLA(0.0, 0.0), 100_000.0)
             @test bb.min_lon < 0.0
@@ -605,6 +905,25 @@ using Test
             @test bb.max_lat > 0.0
             # ~100km ≈ ~0.9 degrees at equator
             @test bb.max_lon ≈ 0.9 atol=0.1
+        end
+        @testset "destination_boundingbox at high latitude" begin
+            bb = destination_boundingbox(LLA(0.0, 60.0), 100_000.0)
+            @test bb.min_lon < 0.0
+            @test bb.max_lon > 0.0
+            # At 60° lat, longitude spread should be larger than at equator
+            @test (bb.max_lon - bb.min_lon) > 1.0
+        end
+        @testset "destination_boundingbox with ECEF" begin
+            bb_lla = destination_boundingbox(LLA(0.0, 0.0), 100_000.0)
+            bb_ecef = destination_boundingbox(ECEF(LLA(0.0, 0.0), WGS84), 100_000.0)
+            @test bb_ecef.min_lon ≈ bb_lla.min_lon atol=1e-6
+            @test bb_ecef.max_lat ≈ bb_lla.max_lat atol=1e-6
+        end
+        @testset "boundingbox with mixed AbstractFixedCoords" begin
+            pts = [LLA(-74.0, 40.0), ECEF(LLA(-73.0, 41.0), WGS84), LLA(-75.0, 40.5)]
+            bb = boundingbox(pts)
+            @test bb.min_lon ≈ -75.0 atol=1e-6
+            @test bb.max_lat ≈ 41.0 atol=1e-6
         end
     end
 
@@ -625,6 +944,36 @@ using Test
             pts_lla = [LLA(0, 0), LLA(1, 0), LLA(1, 1), LLA(0, 1)]
             pts_ecef = [ECEF(p, WGS84) for p in pts_lla]
             @test polygon_area(pts_ecef) ≈ polygon_area(pts_lla) rtol=0.001
+        end
+        @testset "fewer than 3 points returns 0" begin
+            @test polygon_area(LLA{Float64}[]) == 0.0
+            @test polygon_area([LLA(0, 0)]) == 0.0
+            @test polygon_area([LLA(0, 0), LLA(1, 0)]) == 0.0
+        end
+        @testset "reversed winding order gives same area" begin
+            pts = [LLA(0, 0), LLA(1, 0), LLA(1, 1), LLA(0, 1)]
+            pts_rev = reverse(pts)
+            @test polygon_area(pts) ≈ polygon_area(pts_rev) rtol=0.001
+        end
+        @testset "larger polygon (10°×10° at equator)" begin
+            pts = [LLA(0, 0), LLA(10, 0), LLA(10, 10), LLA(0, 10)]
+            area = polygon_area(pts)
+            # ~1,233,000 km² (roughly)
+            @test area / 1e6 > 1.0e6  # > 1,000,000 km²
+            @test area / 1e6 < 1.5e6  # < 1,500,000 km²
+        end
+        @testset "1°×1° square at high latitude (smaller)" begin
+            pts_eq = [LLA(0, 0), LLA(1, 0), LLA(1, 1), LLA(0, 1)]
+            pts_hi = [LLA(0, 60), LLA(1, 60), LLA(1, 61), LLA(0, 61)]
+            area_eq = polygon_area(pts_eq)
+            area_hi = polygon_area(pts_hi)
+            @test area_hi < area_eq  # Higher latitude → smaller area
+        end
+        @testset "with non-default datum" begin
+            pts = [LLA(0, 0), LLA(1, 0), LLA(1, 1), LLA(0, 1)]
+            area_wgs = polygon_area(pts)
+            area_grs = polygon_area(pts; datum=GRS80)
+            @test area_wgs ≈ area_grs rtol=1e-6
         end
     end
 end
