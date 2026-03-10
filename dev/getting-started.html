@@ -65,7 +65,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./api.html" rel="next">
+<link href="./coordinates.html" rel="next">
 <link href="./index.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -148,7 +148,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html">Docs</a></li><li class="breadcrumb-item"><a href="./getting-started.html">Getting Started</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html">Docs</a></li><li class="breadcrumb-item"><a href="./getting-started.html"><span class="chapter-title">Getting Started</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -184,8 +184,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./getting-started.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Getting Started</span></a>
+  <a href="./getting-started.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Getting Started</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./coordinates.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Coordinates</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./geodesics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Geodesics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./areas-and-bounds.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Areas and Bounding Boxes</span></a>
   </div>
 </li>
       </ul>
@@ -237,17 +251,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#basic-usage" id="toc-basic-usage" class="nav-link active" data-scroll-target="#basic-usage">Basic Usage</a></li>
-  <li><a href="#examples" id="toc-examples" class="nav-link" data-scroll-target="#examples">Examples</a></li>
+  <li><a href="#creating-coordinates" id="toc-creating-coordinates" class="nav-link active" data-scroll-target="#creating-coordinates">Creating Coordinates</a></li>
+  <li><a href="#datums" id="toc-datums" class="nav-link" data-scroll-target="#datums">Datums</a></li>
+  <li><a href="#measuring-distances" id="toc-measuring-distances" class="nav-link" data-scroll-target="#measuring-distances">Measuring Distances</a></li>
+  <li><a href="#bearing" id="toc-bearing" class="nav-link" data-scroll-target="#bearing">Bearing</a></li>
+  <li><a href="#computing-destinations" id="toc-computing-destinations" class="nav-link" data-scroll-target="#computing-destinations">Computing Destinations</a></li>
+  <li><a href="#interpolation-along-a-geodesic" id="toc-interpolation-along-a-geodesic" class="nav-link" data-scroll-target="#interpolation-along-a-geodesic">Interpolation Along a Geodesic</a></li>
+  <li><a href="#coordinate-conversions" id="toc-coordinate-conversions" class="nav-link" data-scroll-target="#coordinate-conversions">Coordinate Conversions</a></li>
+  <li><a href="#polygon-area" id="toc-polygon-area" class="nav-link" data-scroll-target="#polygon-area">Polygon Area</a></li>
+  <li><a href="#bounding-boxes" id="toc-bounding-boxes" class="nav-link" data-scroll-target="#bounding-boxes">Bounding Boxes</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html">Docs</a></li><li class="breadcrumb-item"><a href="./getting-started.html">Getting Started</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html">Docs</a></li><li class="breadcrumb-item"><a href="./getting-started.html"><span class="chapter-title">Getting Started</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Getting Started</h1>
+<h1 class="title"><span class="chapter-title">Getting Started</span></h1>
 </div>
 
 
@@ -264,13 +285,206 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="basic-usage" class="level2">
-<h2 class="anchored" data-anchor-id="basic-usage">Basic Usage</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GeodeticOps</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This tutorial walks through the core features of GeodeticOps.jl.</p>
+<section id="creating-coordinates" class="level2">
+<h2 class="anchored" data-anchor-id="creating-coordinates">Creating Coordinates</h2>
+<p>The most common coordinate type is <code>LLA</code> (longitude, latitude, altitude):</p>
+<div id="4" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># New York City (altitude defaults to 0)</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>nyc <span class="op">=</span> <span class="fu">LLA</span>(<span class="op">-</span><span class="fl">74.006</span>, <span class="fl">40.7128</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>LLA(lon=-74.006°, lat=40.7128°, alt=0.0m)</code></pre>
+</div>
+</div>
+<div id="6" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Mount Everest summit</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>everest <span class="op">=</span> <span class="fu">LLA</span>(<span class="fl">86.925</span>, <span class="fl">27.988</span>, <span class="fl">8848.86</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>LLA(lon=86.925°, lat=27.988°, alt=8848.86m)</code></pre>
+</div>
+</div>
+<p>All coordinate types are parametric. The type parameter promotes automatically:</p>
+<div id="8" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">LLA</span>(<span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span>)        <span class="co"># Int</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>LLA(lon=1°, lat=2°, alt=3m)</code></pre>
+</div>
+</div>
+<div id="10" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">LLA</span>(<span class="fl">1.0f0</span>, <span class="fl">2.0f0</span>)   <span class="co"># Float32</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>LLA(lon=1.0°, lat=2.0°, alt=0.0m)</code></pre>
+</div>
+</div>
+<div id="12" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">LLA</span><span class="dt">{Float32}</span>(<span class="fl">1</span>, <span class="fl">2</span>)   <span class="co"># Explicit type parameter</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>LLA(lon=1.0°, lat=2.0°, alt=0.0m)</code></pre>
+</div>
+</div>
 </section>
-<section id="examples" class="level2">
-<h2 class="anchored" data-anchor-id="examples">Examples</h2>
-<p><em>TODO: Add examples here.</em></p>
+<section id="datums" class="level2">
+<h2 class="anchored" data-anchor-id="datums">Datums</h2>
+<p>A <code>Datum</code> defines the shape of the reference ellipsoid. GeodeticOps exports four common datums:</p>
+<div id="14" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> d <span class="kw">in</span> [WGS84, GRS80, CLARKE1866, WGS72]</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(d)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Datum("WGS 84", a=6.378137e6, 1/f=298.257223563)
+Datum("GRS 80", a=6.378137e6, 1/f=298.257222101)
+Datum("Clarke 1866", a=6.3782064e6, 1/f=294.978698214)
+Datum("WGS 72", a=6.378135e6, 1/f=298.26)</code></pre>
+</div>
+</div>
+<p>All operations default to WGS84. You can override per-call with the <code>datum</code> keyword, or change the global default via <code>DEFAULT_DATUM[]</code>:</p>
+<div id="16" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Per-call override</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">distance</span>(nyc, <span class="fu">LLA</span>(<span class="op">-</span><span class="fl">0.1278</span>, <span class="fl">51.5074</span>); datum<span class="op">=</span>GRS80)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>5.585233578986238e6</code></pre>
+</div>
+</div>
+<div id="18" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Change the global default</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>DEFAULT_DATUM[] <span class="op">=</span> GRS80</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>DEFAULT_DATUM[]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>Datum("GRS 80", a=6.378137e6, 1/f=298.257222101)</code></pre>
+</div>
+</div>
+<div id="20" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Restore WGS84</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>DEFAULT_DATUM[] <span class="op">=</span> WGS84</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>Datum("WGS 84", a=6.378137e6, 1/f=298.257223563)</code></pre>
+</div>
+</div>
+</section>
+<section id="measuring-distances" class="level2">
+<h2 class="anchored" data-anchor-id="measuring-distances">Measuring Distances</h2>
+<p><strong>Haversine</strong> gives a fast great-circle approximation:</p>
+<div id="22" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>london <span class="op">=</span> <span class="fu">LLA</span>(<span class="op">-</span><span class="fl">0.1278</span>, <span class="fl">51.5074</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">haversine</span>(nyc, london)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>5.570229848664454e6</code></pre>
+</div>
+</div>
+<p><strong>Vincenty</strong> is more accurate, accounting for the ellipsoid:</p>
+<div id="24" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">distance</span>(nyc, london)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>5.585233578943206e6</code></pre>
+</div>
+</div>
+<p>The two methods agree to within ~0.5% for most distances.</p>
+</section>
+<section id="bearing" class="level2">
+<h2 class="anchored" data-anchor-id="bearing">Bearing</h2>
+<p>Compute the initial bearing (forward azimuth) from one point to another:</p>
+<div id="26" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bearing</span>(nyc, london)  <span class="co"># degrees clockwise from north</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>51.24122911946578</code></pre>
+</div>
+</div>
+</section>
+<section id="computing-destinations" class="level2">
+<h2 class="anchored" data-anchor-id="computing-destinations">Computing Destinations</h2>
+<p>Given a starting point, bearing, and distance, find the destination:</p>
+<div id="28" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1000 km due north from the equator</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="fu">forward_geodesic</span>(<span class="fu">LLA</span>(<span class="fl">0.0</span>, <span class="fl">0.0</span>), <span class="fl">0.0</span>, <span class="fl">1_000_000.0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>LLA(lon=0.0°, lat=9.042944436329899°, alt=0.0m)</code></pre>
+</div>
+</div>
+</section>
+<section id="interpolation-along-a-geodesic" class="level2">
+<h2 class="anchored" data-anchor-id="interpolation-along-a-geodesic">Interpolation Along a Geodesic</h2>
+<p>Find the point at any fraction along a geodesic path:</p>
+<div id="30" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>tokyo <span class="op">=</span> <span class="fu">LLA</span>(<span class="fl">139.6917</span>, <span class="fl">35.6895</span>)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="fu">midpoint</span>(nyc, tokyo)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>LLA(lon=-153.64271957455668°, lat=69.72196141701565°, alt=0.0m)</code></pre>
+</div>
+</div>
+<div id="32" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Quarter-way point</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="fu">intermediate_point</span>(nyc, tokyo, <span class="fl">0.25</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>LLA(lon=-96.60006370071237°, lat=60.8407105106562°, alt=0.0m)</code></pre>
+</div>
+</div>
+</section>
+<section id="coordinate-conversions" class="level2">
+<h2 class="anchored" data-anchor-id="coordinate-conversions">Coordinate Conversions</h2>
+<p>Convert between any supported coordinate types:</p>
+<div id="34" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># LLA to ECEF (Earth-Centered, Earth-Fixed)</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>ecef <span class="op">=</span> <span class="fu">ECEF</span>(nyc, WGS84)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>ECEF(x=1.333998456149258e6, y=-4.654044842733645e6, z=4.1383002386952764e6)</code></pre>
+</div>
+</div>
+<div id="36" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ECEF back to LLA</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="fu">LLA</span>(ecef, WGS84)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>LLA(lon=-74.006°, lat=40.7128°, alt=0.0m)</code></pre>
+</div>
+</div>
+<div id="38" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># LLA to UTM</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>utm <span class="op">=</span> <span class="fu">UTM</span>(nyc, WGS84)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>UTM(zone=18N, easting=583959.372324113, northing=4.507350998397536e6)</code></pre>
+</div>
+</div>
+<p>Local coordinate frames (ENU, NED, AER) require a reference point:</p>
+<div id="40" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Displacement from NYC to a nearby point in East-North-Up</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>nearby <span class="op">=</span> <span class="fu">LLA</span>(<span class="op">-</span><span class="fl">73.996</span>, <span class="fl">40.722</span>, <span class="fl">50.0</span>)</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ENU</span>(nearby, nyc, WGS84)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>ENU(e=844.8835733062557, n=1021.7018510246394, u=49.86208985488406)</code></pre>
+</div>
+</div>
+<p>See <a href="./coordinates.html">Coordinates</a> for the full list of types and conversion paths.</p>
+</section>
+<section id="polygon-area" class="level2">
+<h2 class="anchored" data-anchor-id="polygon-area">Polygon Area</h2>
+<p>Compute the area of a polygon on the ellipsoid:</p>
+<div id="42" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Approximate area of a 1 deg x 1 deg square at the equator</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>pts <span class="op">=</span> [<span class="fu">LLA</span>(<span class="fl">0</span>, <span class="fl">0</span>), <span class="fu">LLA</span>(<span class="fl">1</span>, <span class="fl">0</span>), <span class="fu">LLA</span>(<span class="fl">1</span>, <span class="fl">1</span>), <span class="fu">LLA</span>(<span class="fl">0</span>, <span class="fl">1</span>)]</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>area_km2 <span class="op">=</span> <span class="fu">polygon_area</span>(pts) <span class="op">/</span> <span class="fl">1e6</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">$</span>(<span class="fu">round</span>(area_km2, digits<span class="op">=</span><span class="fl">0</span>))<span class="st"> km^2"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>12364.0 km^2</code></pre>
+</div>
+</div>
+</section>
+<section id="bounding-boxes" class="level2">
+<h2 class="anchored" data-anchor-id="bounding-boxes">Bounding Boxes</h2>
+<p>Compute the bounding box of a set of points:</p>
+<div id="44" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>pts <span class="op">=</span> [<span class="fu">LLA</span>(<span class="op">-</span><span class="fl">74.0</span>, <span class="fl">40.0</span>), <span class="fu">LLA</span>(<span class="op">-</span><span class="fl">73.0</span>, <span class="fl">41.0</span>), <span class="fu">LLA</span>(<span class="op">-</span><span class="fl">75.0</span>, <span class="fl">40.5</span>)]</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="fu">boundingbox</span>(pts)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>BoundingBox(lon=[-75.0, -73.0], lat=[40.0, 41.0])</code></pre>
+</div>
+</div>
+<p>Or find the bounding box of all points within a given distance:</p>
+<div id="46" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">destination_boundingbox</span>(nyc, <span class="fl">50_000.0</span>)  <span class="co"># 50 km radius</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>BoundingBox(lon=[-74.59771173143642, -73.41428826856358], lat=[40.26252811430199, 41.16303665323765])</code></pre>
+</div>
+</div>
 
 
 </section>
@@ -683,8 +897,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./api.html" class="pagination-link" aria-label="API">
-        <span class="nav-page-text"><span class="chapter-title">API</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./coordinates.html" class="pagination-link" aria-label="Coordinates">
+        <span class="nav-page-text"><span class="chapter-title">Coordinates</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

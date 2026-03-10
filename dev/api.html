@@ -66,7 +66,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
 <link href="./resources/changelog.html" rel="next">
-<link href="./getting-started.html" rel="prev">
+<link href="./areas-and-bounds.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
@@ -184,8 +184,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./getting-started.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Getting Started</span></a>
+  <a href="./getting-started.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Getting Started</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./coordinates.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Coordinates</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./geodesics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Geodesics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./areas-and-bounds.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Areas and Bounding Boxes</span></a>
   </div>
 </li>
       </ul>
@@ -268,18 +282,256 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="types" class="level2">
 <h2 class="anchored" data-anchor-id="types">Types</h2>
 <div class="card mb-3">
-<section id="config" class="level4 card-header api-item-header">
-<h4 class="anchored" data-anchor-id="config"><code>Config</code></h4>
+<section id="aer" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="aer"><code>AER</code></h4>
 </section>
 <div class="card-body">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>Config</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Configuration for the package.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">AER</span><span class="dt">{T}</span>(az, el, range)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Azimuth-Elevation-Range coordinates relative to a reference point.</p>
 <section id="fields" class="level1">
 <h1>Fields</h1>
 <ul>
-<li><code>name::String</code>: The name to use in greetings.</li>
-<li><code>verbose::Bool</code>: Whether to print extra information.</li>
+<li><code>az::T</code>: Azimuth in degrees, clockwise from north [0, 360).</li>
+<li><code>el::T</code>: Elevation in degrees, up from horizon [−90, 90].</li>
+<li><code>range::T</code>: Slant range in meters.</li>
 </ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">AER</span>(c<span class="op">::</span><span class="dt">ENU</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Convert ENU to AER coordinates (no datum needed — pure geometry).</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">AER</span>(c<span class="op">::</span><span class="dt">LLA</span>, ref<span class="op">::</span><span class="dt">LLA</span>, datum<span class="op">::</span><span class="dt">Datum</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Convert LLA to AER relative to the reference point <code>ref</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">AER</span>(c<span class="op">::</span><span class="dt">ECEF</span>, ref<span class="op">::</span><span class="dt">LLA</span>, datum<span class="op">::</span><span class="dt">Datum</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Convert ECEF to AER relative to the reference point <code>ref</code>.</p>
+</section>
+</div>
+</div>
+<div class="card mb-3">
+<section id="abstractcoords" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="abstractcoords"><code>AbstractCoords</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>AbstractCoords{T}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Abstract supertype for all coordinate representations.</p>
+</div>
+</div>
+<div class="card mb-3">
+<section id="abstractfixedcoords" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="abstractfixedcoords"><code>AbstractFixedCoords</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>AbstractFixedCoords{T} <span class="op">&lt;:</span><span class="dt"> AbstractCoords{T}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Abstract supertype for coordinate types that represent a fixed position on the ellipsoid and can be converted to <code>LLA</code> using only a <code>Datum</code> (no reference point required).</p>
+<p>Subtypes: <code>LLA</code>, <code>LLARad</code>, <code>ECEF</code>, <code>UTM</code>.</p>
+</div>
+</div>
+<div class="card mb-3">
+<section id="abstractrelativecoords" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="abstractrelativecoords"><code>AbstractRelativeCoords</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>AbstractRelativeCoords{T} <span class="op">&lt;:</span><span class="dt"> AbstractCoords{T}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Abstract supertype for coordinate types that are relative to a reference point. These require both a <code>Datum</code> and a reference <code>LLA</code> for conversion.</p>
+<p>Subtypes: <code>ENU</code>, <code>NED</code>, <code>AER</code>.</p>
+</div>
+</div>
+<div class="card mb-3">
+<section id="boundingbox" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="boundingbox"><code>BoundingBox</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">BoundingBox</span>(min_lon, min_lat, max_lon, max_lat)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>An axis-aligned bounding box in geodetic coordinates (degrees).</p>
+<p>When <code>min_lon &gt; max_lon</code>, the box wraps across the antimeridian.</p>
+<section id="examples" class="level3">
+<h3 class="anchored" data-anchor-id="examples">Examples</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> bbox <span class="op">=</span> <span class="fu">BoundingBox</span>(<span class="op">-</span><span class="fl">75.0</span>, <span class="fl">40.0</span>, <span class="op">-</span><span class="fl">73.0</span>, <span class="fl">41.0</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">BoundingBox</span>(lon<span class="op">=</span>[<span class="op">-</span><span class="fl">75.0</span>, <span class="op">-</span><span class="fl">73.0</span>], lat<span class="op">=</span>[<span class="fl">40.0</span>, <span class="fl">41.0</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</div>
+</div>
+<div class="card mb-3">
+<section id="datum" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="datum"><code>Datum</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Datum</span>(name, a, f_inv)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>A geodetic datum defined by an ellipsoid of revolution.</p>
+<section id="fields-1" class="level1">
+<h1>Fields</h1>
+<ul>
+<li><code>name::String</code>: Human-readable name (e.g.&nbsp;<code>"WGS 84"</code>).</li>
+<li><code>a::Float64</code>: Semi-major axis in meters (equatorial radius).</li>
+<li><code>f_inv::Float64</code>: Inverse flattening (1/f). Use <code>Inf</code> for a perfect sphere.</li>
+</ul>
+<section id="examples-1" class="level3">
+<h3 class="anchored" data-anchor-id="examples-1">Examples</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> WGS84</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">Datum</span>(<span class="st">"WGS 84"</span>, a<span class="op">=</span><span class="fl">6.378137e6</span>, <span class="fl">1</span><span class="op">/</span>f<span class="op">=</span><span class="fl">298.257223563</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">semi_major_axis</span>(WGS84)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fl">6.378137e6</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">semi_minor_axis</span>(WGS84)</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="fl">6.356752314245179e6</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+</div>
+</div>
+<div class="card mb-3">
+<section id="ecef" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="ecef"><code>ECEF</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ECEF</span><span class="dt">{T}</span>(x, y, z)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Earth-Centered, Earth-Fixed Cartesian coordinates in meters.</p>
+<section id="fields-2" class="level1">
+<h1>Fields</h1>
+<ul>
+<li><code>x::T</code>: X-axis (intersection of prime meridian and equator).</li>
+<li><code>y::T</code>: Y-axis (90° east on the equator).</li>
+<li><code>z::T</code>: Z-axis (north pole).</li>
+</ul>
+<section id="examples-2" class="level3">
+<h3 class="anchored" data-anchor-id="examples-2">Examples</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">ECEF</span>(<span class="fl">6_378_137.0</span>, <span class="fl">0.0</span>, <span class="fl">0.0</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ECEF</span>(x<span class="op">=</span><span class="fl">6.378137e6</span>, y<span class="op">=</span><span class="fl">0.0</span>, z<span class="op">=</span><span class="fl">0.0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ECEF</span>(c<span class="op">::</span><span class="dt">LLA</span>, datum<span class="op">::</span><span class="dt">Datum</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Convert geodetic coordinates (degrees) to ECEF Cartesian coordinates.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ECEF</span>(c<span class="op">::</span><span class="dt">LLARad</span>, datum<span class="op">::</span><span class="dt">Datum</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Convert geodetic coordinates (radians) to ECEF Cartesian coordinates.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ECEF</span>(c<span class="op">::</span><span class="dt">ENU</span>, ref<span class="op">::</span><span class="dt">LLA</span>, datum<span class="op">::</span><span class="dt">Datum</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Convert ENU coordinates back to ECEF given the reference point <code>ref</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ECEF</span>(c<span class="op">::</span><span class="dt">NED</span>, ref<span class="op">::</span><span class="dt">LLA</span>, datum<span class="op">::</span><span class="dt">Datum</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Convert NED coordinates back to ECEF given the reference point <code>ref</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ECEF</span>(c<span class="op">::</span><span class="dt">AER</span>, ref<span class="op">::</span><span class="dt">LLA</span>, datum<span class="op">::</span><span class="dt">Datum</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Convert AER to ECEF given the reference point <code>ref</code>.</p>
+</section>
+</section>
+</div>
+</div>
+<div class="card mb-3">
+<section id="enu" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="enu"><code>ENU</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ENU</span><span class="dt">{T}</span>(<span class="cn">e</span>, n, u)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>East-North-Up local tangent plane coordinates in meters, relative to a reference point.</p>
+<section id="fields-3" class="level1">
+<h1>Fields</h1>
+<ul>
+<li><code>e::T</code>: East displacement in meters.</li>
+<li><code>n::T</code>: North displacement in meters.</li>
+<li><code>u::T</code>: Up displacement in meters.</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ENU</span>(c<span class="op">::</span><span class="dt">ECEF</span>, ref<span class="op">::</span><span class="dt">LLA</span>, datum<span class="op">::</span><span class="dt">Datum</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Convert ECEF coordinates to ENU relative to the reference point <code>ref</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ENU</span>(c<span class="op">::</span><span class="dt">LLA</span>, ref<span class="op">::</span><span class="dt">LLA</span>, datum<span class="op">::</span><span class="dt">Datum</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Convert LLA coordinates to ENU relative to the reference point <code>ref</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ENU</span>(c<span class="op">::</span><span class="dt">AER</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Convert AER to ENU coordinates (no datum needed — pure geometry).</p>
+</section>
+</div>
+</div>
+<div class="card mb-3">
+<section id="lla" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="lla"><code>LLA</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">LLA</span><span class="dt">{T}</span>(lon, lat, alt<span class="op">=</span><span class="fl">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Geodetic coordinates: longitude, latitude (degrees), and altitude (meters above ellipsoid).</p>
+<section id="fields-4" class="level1">
+<h1>Fields</h1>
+<ul>
+<li><code>lon::T</code>: Longitude in degrees (−180, 180].</li>
+<li><code>lat::T</code>: Latitude in degrees [−90, 90].</li>
+<li><code>alt::T</code>: Altitude above the ellipsoid in meters.</li>
+</ul>
+<section id="examples-3" class="level3">
+<h3 class="anchored" data-anchor-id="examples-3">Examples</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">LLA</span>(<span class="fl">0.0</span>, <span class="fl">0.0</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="fu">LLA</span>(lon<span class="op">=</span><span class="fl">0.0</span>°, lat<span class="op">=</span><span class="fl">0.0</span>°, alt<span class="op">=</span><span class="fl">0.0</span>m)</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">LLA</span><span class="dt">{Float32}</span>(<span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span>)</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="fu">LLA</span>(lon<span class="op">=</span><span class="fl">1.0</span>°, lat<span class="op">=</span><span class="fl">2.0</span>°, alt<span class="op">=</span><span class="fl">3.0</span>m)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">LLA</span>(c<span class="op">::</span><span class="dt">ECEF</span>, datum<span class="op">::</span><span class="dt">Datum</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Convert ECEF Cartesian coordinates to geodetic coordinates (degrees). Uses Bowring’s iterative method.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">LLA</span>(c<span class="op">::</span><span class="dt">ENU</span>, ref<span class="op">::</span><span class="dt">LLA</span>, datum<span class="op">::</span><span class="dt">Datum</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Convert ENU coordinates to LLA given the reference point <code>ref</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">LLA</span>(c<span class="op">::</span><span class="dt">NED</span>, ref<span class="op">::</span><span class="dt">LLA</span>, datum<span class="op">::</span><span class="dt">Datum</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Convert NED coordinates to LLA given the reference point <code>ref</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">LLA</span>(c<span class="op">::</span><span class="dt">AER</span>, ref<span class="op">::</span><span class="dt">LLA</span>, datum<span class="op">::</span><span class="dt">Datum</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Convert AER to LLA given the reference point <code>ref</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">LLA</span>(c<span class="op">::</span><span class="dt">UTM</span>, datum<span class="op">::</span><span class="dt">Datum</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Convert UTM to LLA.</p>
+</section>
+</section>
+</div>
+</div>
+<div class="card mb-3">
+<section id="llarad" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="llarad"><code>LLARad</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">LLARad</span><span class="dt">{T}</span>(lon, lat, alt<span class="op">=</span><span class="fl">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Geodetic coordinates: longitude, latitude (radians), and altitude (meters above ellipsoid).</p>
+<section id="fields-5" class="level1">
+<h1>Fields</h1>
+<ul>
+<li><code>lon::T</code>: Longitude in radians (−π, π].</li>
+<li><code>lat::T</code>: Latitude in radians [−π/2, π/2].</li>
+<li><code>alt::T</code>: Altitude above the ellipsoid in meters.</li>
+</ul>
+<section id="examples-4" class="level3">
+<h3 class="anchored" data-anchor-id="examples-4">Examples</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">LLARad</span>(<span class="fl">0.0</span>, <span class="fl">0.0</span>)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="fu">LLARad</span>(lon<span class="op">=</span><span class="fl">0.0</span> rad, lat<span class="op">=</span><span class="fl">0.0</span> rad, alt<span class="op">=</span><span class="fl">0.0</span>m)</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">LLARad</span>(<span class="fu">LLA</span>(<span class="fl">180.0</span>, <span class="fl">45.0</span>))</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a><span class="fu">LLARad</span>(lon<span class="op">=</span><span class="fl">3.141592653589793</span> rad, lat<span class="op">=</span><span class="fl">0.7853981633974483</span> rad, alt<span class="op">=</span><span class="fl">0.0</span>m)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">LLARad</span>(c<span class="op">::</span><span class="dt">ECEF</span>, datum<span class="op">::</span><span class="dt">Datum</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Convert ECEF Cartesian coordinates to geodetic coordinates (radians).</p>
+</section>
+</section>
+</div>
+</div>
+<div class="card mb-3">
+<section id="ned" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="ned"><code>NED</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">NED</span><span class="dt">{T}</span>(n, <span class="cn">e</span>, d)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>North-East-Down local tangent plane coordinates in meters, relative to a reference point. Standard aviation/aerospace convention.</p>
+<section id="fields-6" class="level1">
+<h1>Fields</h1>
+<ul>
+<li><code>n::T</code>: North displacement in meters.</li>
+<li><code>e::T</code>: East displacement in meters.</li>
+<li><code>d::T</code>: Down displacement in meters.</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">NED</span>(c<span class="op">::</span><span class="dt">ECEF</span>, ref<span class="op">::</span><span class="dt">LLA</span>, datum<span class="op">::</span><span class="dt">Datum</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Convert ECEF coordinates to NED relative to the reference point <code>ref</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">NED</span>(c<span class="op">::</span><span class="dt">LLA</span>, ref<span class="op">::</span><span class="dt">LLA</span>, datum<span class="op">::</span><span class="dt">Datum</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Convert LLA coordinates to NED relative to the reference point <code>ref</code>.</p>
+</section>
+</div>
+</div>
+<div class="card mb-3">
+<section id="utm" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="utm"><code>UTM</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">UTM</span><span class="dt">{T}</span>(zone, isnorth, easting, northing)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Universal Transverse Mercator projected coordinates.</p>
+<section id="fields-7" class="level1">
+<h1>Fields</h1>
+<ul>
+<li><code>zone::Int</code>: UTM zone number (1–60).</li>
+<li><code>isnorth::Bool</code>: <code>true</code> for northern hemisphere, <code>false</code> for southern.</li>
+<li><code>easting::T</code>: Easting in meters.</li>
+<li><code>northing::T</code>: Northing in meters.</li>
+</ul>
+<p>!!! note Standard zone determination only. Norway/Svalbard exceptions (zones 32V, 31X–37X) are not handled.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">UTM</span>(c<span class="op">::</span><span class="dt">LLA</span>, datum<span class="op">::</span><span class="dt">Datum</span>; zone<span class="op">=</span><span class="cn">nothing</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Convert LLA to UTM. Zone is auto-detected from longitude unless specified.</p>
 </section>
 </div>
 </div>
@@ -287,37 +539,214 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="functions" class="level2">
 <h2 class="anchored" data-anchor-id="functions">Functions</h2>
 <div class="card mb-3">
-<section id="greet" class="level4 card-header api-item-header">
-<h4 class="anchored" data-anchor-id="greet"><code>greet</code></h4>
+<section id="bearing" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="bearing"><code>bearing</code></h4>
 </section>
 <div class="card-body">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">greet</span>()</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">greet</span>(name<span class="op">::</span><span class="dt">String</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Return a greeting string. If <code>name</code> is provided, greet that person.</p>
-<section id="examples" class="level3">
-<h3 class="anchored" data-anchor-id="examples">Examples</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">greet</span>()</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="st">"Hello from GeodeticOps!"</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">greet</span>(<span class="st">"Julia"</span>)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="st">"Hello, Julia!"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">forward_azimuth</span>(a<span class="op">::</span><span class="dt">AbstractFixedCoords</span>, b<span class="op">::</span><span class="dt">AbstractFixedCoords</span>; datum<span class="op">=</span>DEFAULT_DATUM[]) <span class="op">-&gt;</span> <span class="dt">Float64</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Compute the forward azimuth (degrees, clockwise from north) from <code>a</code> to <code>b</code>.</p>
+<section id="examples-5" class="level3">
+<h3 class="anchored" data-anchor-id="examples-5">Examples</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">forward_azimuth</span>(<span class="fu">LLA</span>(<span class="fl">0.0</span>, <span class="fl">0.0</span>), <span class="fu">LLA</span>(<span class="fl">1.0</span>, <span class="fl">1.0</span>))</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="fl">44.99563948</span><span class="op">...</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 </div>
 </div>
 <div class="card mb-3">
-<section id="transform" class="level4 card-header api-item-header">
-<h4 class="anchored" data-anchor-id="transform"><code>transform</code></h4>
+<section id="boundingbox" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="boundingbox"><code>boundingbox</code></h4>
 </section>
 <div class="card-body">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">transform</span>(x<span class="op">::</span><span class="dt">AbstractVector</span>; scale<span class="op">=</span><span class="fl">1.0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Apply a transformation to <code>x</code>, scaling each element by <code>scale</code>.</p>
-<section id="examples-1" class="level3">
-<h3 class="anchored" data-anchor-id="examples-1">Examples</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">transform</span>([<span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span>]; scale<span class="op">=</span><span class="fl">2.0</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fl">3</span><span class="op">-</span>element <span class="dt">Vector</span>{<span class="dt">Float64</span>}<span class="op">:</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a> <span class="fl">2.0</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a> <span class="fl">4.0</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a> <span class="fl">6.0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">boundingbox</span>(points; datum<span class="op">=</span>DEFAULT_DATUM[]) <span class="op">-&gt;</span> BoundingBox</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Compute the axis-aligned bounding box for a collection of <code>AbstractFixedCoords</code>.</p>
+<section id="examples-6" class="level3">
+<h3 class="anchored" data-anchor-id="examples-6">Examples</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb41"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> pts <span class="op">=</span> [<span class="fu">LLA</span>(<span class="op">-</span><span class="fl">74.0</span>, <span class="fl">40.0</span>), <span class="fu">LLA</span>(<span class="op">-</span><span class="fl">73.0</span>, <span class="fl">41.0</span>), <span class="fu">LLA</span>(<span class="op">-</span><span class="fl">75.0</span>, <span class="fl">40.5</span>)];</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">boundingbox</span>(pts)</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a><span class="fu">BoundingBox</span>(lon<span class="op">=</span>[<span class="op">-</span><span class="fl">75.0</span>, <span class="op">-</span><span class="fl">73.0</span>], lat<span class="op">=</span>[<span class="fl">40.0</span>, <span class="fl">41.0</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</div>
+</div>
+<div class="card mb-3">
+<section id="destination_boundingbox" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="destination_boundingbox"><code>destination_boundingbox</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb42"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">destination_boundingbox</span>(origin<span class="op">::</span><span class="dt">AbstractFixedCoords</span>, dist; datum<span class="op">=</span>DEFAULT_DATUM[]) <span class="op">-&gt;</span> BoundingBox</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Compute the bounding box of all points within <code>dist</code> meters of <code>origin</code>.</p>
+<section id="examples-7" class="level3">
+<h3 class="anchored" data-anchor-id="examples-7">Examples</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb43"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">destination_boundingbox</span>(<span class="fu">LLA</span>(<span class="fl">0.0</span>, <span class="fl">0.0</span>), <span class="fl">100_000.0</span>)</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="fu">BoundingBox</span>(lon<span class="op">=</span>[<span class="op">-</span><span class="fl">0.9</span>, <span class="fl">0.9</span>], lat<span class="op">=</span>[<span class="op">-</span><span class="fl">0.9</span>, <span class="fl">0.9</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</div>
+</div>
+<div class="card mb-3">
+<section id="distance" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="distance"><code>distance</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb44"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">distance</span>(a<span class="op">::</span><span class="dt">AbstractFixedCoords</span>, b<span class="op">::</span><span class="dt">AbstractFixedCoords</span>; datum<span class="op">=</span>DEFAULT_DATUM[]) <span class="op">-&gt;</span> <span class="dt">Float64</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Compute the geodesic distance in meters between two points using Vincenty’s formula.</p>
+<section id="examples-8" class="level3">
+<h3 class="anchored" data-anchor-id="examples-8">Examples</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">distance</span>(<span class="fu">LLA</span>(<span class="op">-</span><span class="fl">74.006</span>, <span class="fl">40.7128</span>), <span class="fu">LLA</span>(<span class="op">-</span><span class="fl">0.1278</span>, <span class="fl">51.5074</span>))</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="fl">5.5702e6</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</div>
+</div>
+<div class="card mb-3">
+<section id="eccentricity" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="eccentricity"><code>eccentricity</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb46"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eccentricity</span>(d<span class="op">::</span><span class="dt">Datum</span>) <span class="op">-&gt;</span> <span class="dt">Float64</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Return the first eccentricity: <code>e = √(2f - f²)</code>.</p>
+</div>
+</div>
+<div class="card mb-3">
+<section id="eccentricity_sq" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="eccentricity_sq"><code>eccentricity_sq</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eccentricity_sq</span>(d<span class="op">::</span><span class="dt">Datum</span>) <span class="op">-&gt;</span> <span class="dt">Float64</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Return the first eccentricity squared: <code>e² = 2f - f²</code>.</p>
+</div>
+</div>
+<div class="card mb-3">
+<section id="flattening" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="flattening"><code>flattening</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb48"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">flattening</span>(d<span class="op">::</span><span class="dt">Datum</span>) <span class="op">-&gt;</span> <span class="dt">Float64</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Return the flattening <code>f = 1 / f_inv</code>.</p>
+</div>
+</div>
+<div class="card mb-3">
+<section id="forward_azimuth" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="forward_azimuth"><code>forward_azimuth</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb49"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">forward_azimuth</span>(a<span class="op">::</span><span class="dt">AbstractFixedCoords</span>, b<span class="op">::</span><span class="dt">AbstractFixedCoords</span>; datum<span class="op">=</span>DEFAULT_DATUM[]) <span class="op">-&gt;</span> <span class="dt">Float64</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Compute the forward azimuth (degrees, clockwise from north) from <code>a</code> to <code>b</code>.</p>
+<section id="examples-9" class="level3">
+<h3 class="anchored" data-anchor-id="examples-9">Examples</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb50"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">forward_azimuth</span>(<span class="fu">LLA</span>(<span class="fl">0.0</span>, <span class="fl">0.0</span>), <span class="fu">LLA</span>(<span class="fl">1.0</span>, <span class="fl">1.0</span>))</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="fl">44.99563948</span><span class="op">...</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</div>
+</div>
+<div class="card mb-3">
+<section id="forward_geodesic" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="forward_geodesic"><code>forward_geodesic</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb51"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">forward_geodesic</span>(origin<span class="op">::</span><span class="dt">AbstractFixedCoords</span>, azimuth, dist; datum<span class="op">=</span>DEFAULT_DATUM[]) <span class="op">-&gt;</span> LLA</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Solve the forward (direct) geodesic problem: given a starting point, an azimuth (degrees, clockwise from north), and a distance (meters), compute the destination point.</p>
+<section id="examples-10" class="level3">
+<h3 class="anchored" data-anchor-id="examples-10">Examples</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb52"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">forward_geodesic</span>(<span class="fu">LLA</span>(<span class="fl">0.0</span>, <span class="fl">0.0</span>), <span class="fl">90.0</span>, <span class="fl">111_320.0</span>)</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="fu">LLA</span>(lon<span class="op">=</span><span class="fl">1.0</span>°, lat<span class="op">=</span><span class="fl">0.0</span>°, alt<span class="op">=</span><span class="fl">0.0</span>m)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</div>
+</div>
+<div class="card mb-3">
+<section id="haversine" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="haversine"><code>haversine</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb53"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">haversine</span>(a<span class="op">::</span><span class="dt">AbstractFixedCoords</span>, b<span class="op">::</span><span class="dt">AbstractFixedCoords</span>; datum<span class="op">=</span>DEFAULT_DATUM[]) <span class="op">-&gt;</span> <span class="dt">Float64</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Compute the great-circle distance in meters between two coordinates using the haversine formula. Uses the mean radius <code>R = (2a + b) / 3</code> of the ellipsoid defined by <code>datum</code>. Altitude is ignored.</p>
+<p>Accepts any <code>AbstractFixedCoords</code> (LLA, LLARad, ECEF, UTM).</p>
+<section id="examples-11" class="level3">
+<h3 class="anchored" data-anchor-id="examples-11">Examples</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb54"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">haversine</span>(<span class="fu">LLA</span>(<span class="op">-</span><span class="fl">74.006</span>, <span class="fl">40.7128</span>), <span class="fu">LLA</span>(<span class="op">-</span><span class="fl">0.1278</span>, <span class="fl">51.5074</span>))  <span class="co"># ≈ 5570 km</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="fl">5.570222e6</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</div>
+</div>
+<div class="card mb-3">
+<section id="intermediate_point" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="intermediate_point"><code>intermediate_point</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb55"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="fu">intermediate_point</span>(a<span class="op">::</span><span class="dt">AbstractFixedCoords</span>, b<span class="op">::</span><span class="dt">AbstractFixedCoords</span>, fraction; datum<span class="op">=</span>DEFAULT_DATUM[]) <span class="op">-&gt;</span> LLA</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Return the point at the given <code>fraction</code> (0 to 1) along the geodesic from <code>a</code> to <code>b</code>.</p>
+<section id="examples-12" class="level3">
+<h3 class="anchored" data-anchor-id="examples-12">Examples</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb56"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">intermediate_point</span>(<span class="fu">LLA</span>(<span class="fl">0.0</span>, <span class="fl">0.0</span>), <span class="fu">LLA</span>(<span class="fl">10.0</span>, <span class="fl">0.0</span>), <span class="fl">0.5</span>)</span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a><span class="fu">LLA</span>(lon<span class="op">=</span><span class="fl">5.0</span>°, lat<span class="op">=</span><span class="fl">0.0</span>°, alt<span class="op">=</span><span class="fl">0.0</span>m)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</div>
+</div>
+<div class="card mb-3">
+<section id="midpoint" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="midpoint"><code>midpoint</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb57"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">midpoint</span>(a<span class="op">::</span><span class="dt">AbstractFixedCoords</span>, b<span class="op">::</span><span class="dt">AbstractFixedCoords</span>; datum<span class="op">=</span>DEFAULT_DATUM[]) <span class="op">-&gt;</span> LLA</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Return the midpoint along the geodesic from <code>a</code> to <code>b</code>.</p>
+<section id="examples-13" class="level3">
+<h3 class="anchored" data-anchor-id="examples-13">Examples</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb58"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">midpoint</span>(<span class="fu">LLA</span>(<span class="fl">0.0</span>, <span class="fl">0.0</span>), <span class="fu">LLA</span>(<span class="fl">10.0</span>, <span class="fl">0.0</span>))</span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="fu">LLA</span>(lon<span class="op">=</span><span class="fl">5.0</span>°, lat<span class="op">=</span><span class="fl">0.0</span>°, alt<span class="op">=</span><span class="fl">0.0</span>m)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</div>
+</div>
+<div class="card mb-3">
+<section id="polygon_area" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="polygon_area"><code>polygon_area</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb59"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="fu">polygon_area</span>(points; datum<span class="op">=</span>DEFAULT_DATUM[]) <span class="op">-&gt;</span> <span class="dt">Float64</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Compute the area of a polygon on the ellipsoid in square meters. The polygon is defined by an ordered sequence of <code>AbstractFixedCoords</code> vertices. The polygon is implicitly closed (the last vertex connects back to the first).</p>
+<p>Uses the spherical excess method with the authalic (equal-area) sphere radius.</p>
+<section id="examples-14" class="level3">
+<h3 class="anchored" data-anchor-id="examples-14">Examples</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb60"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="co"># Approximate area of a 1°×1° square at the equator (~12,300 km²)</span></span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>       pts <span class="op">=</span> [<span class="fu">LLA</span>(<span class="fl">0</span>, <span class="fl">0</span>), <span class="fu">LLA</span>(<span class="fl">1</span>, <span class="fl">0</span>), <span class="fu">LLA</span>(<span class="fl">1</span>, <span class="fl">1</span>), <span class="fu">LLA</span>(<span class="fl">0</span>, <span class="fl">1</span>)];</span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">polygon_area</span>(pts) <span class="op">/</span> <span class="fl">1e6</span>  <span class="co"># km²</span></span>
+<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a><span class="op">≈</span> <span class="fl">12308</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</div>
+</div>
+<div class="card mb-3">
+<section id="semi_major_axis" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="semi_major_axis"><code>semi_major_axis</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb61"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="fu">semi_major_axis</span>(d<span class="op">::</span><span class="dt">Datum</span>) <span class="op">-&gt;</span> <span class="dt">Float64</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Return the semi-major axis (equatorial radius) in meters.</p>
+</div>
+</div>
+<div class="card mb-3">
+<section id="semi_minor_axis" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="semi_minor_axis"><code>semi_minor_axis</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb62"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="fu">semi_minor_axis</span>(d<span class="op">::</span><span class="dt">Datum</span>) <span class="op">-&gt;</span> <span class="dt">Float64</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Return the semi-minor axis (polar radius) in meters: <code>b = a * (1 - f)</code>.</p>
+</div>
+</div>
+<div class="card mb-3">
+<section id="vincenty_inverse" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="vincenty_inverse"><code>vincenty_inverse</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb63"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="fu">vincenty_inverse</span>(a<span class="op">::</span><span class="dt">AbstractFixedCoords</span>, b<span class="op">::</span><span class="dt">AbstractFixedCoords</span>; datum<span class="op">=</span>DEFAULT_DATUM[])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Solve the inverse geodesic problem using Vincenty’s iterative method. Returns a <code>NamedTuple</code> with:</p>
+<ul>
+<li><code>distance</code>: geodesic distance in meters.</li>
+<li><code>azimuth1</code>: forward azimuth at <code>a</code> (degrees, clockwise from north).</li>
+<li><code>azimuth2</code>: reverse azimuth at <code>b</code> (degrees, clockwise from north).</li>
+</ul>
+<p>Accepts any <code>AbstractFixedCoords</code> (LLA, LLARad, ECEF, UTM).</p>
+<section id="examples-15" class="level3">
+<h3 class="anchored" data-anchor-id="examples-15">Examples</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb64"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">vincenty_inverse</span>(<span class="fu">LLA</span>(<span class="op">-</span><span class="fl">74.006</span>, <span class="fl">40.7128</span>), <span class="fu">LLA</span>(<span class="op">-</span><span class="fl">0.1278</span>, <span class="fl">51.5074</span>))</span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>(distance <span class="op">=</span> <span class="fl">5.5702e6</span>, azimuth1 <span class="op">=</span> <span class="fl">51.2</span>, azimuth2 <span class="op">=</span> <span class="fl">107.9</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 </div>
 </div>
@@ -325,18 +754,135 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="constants" class="level2">
 <h2 class="anchored" data-anchor-id="constants">Constants</h2>
 <div class="card mb-3">
-<section id="default_greeting" class="level4 card-header api-item-header">
-<h4 class="anchored" data-anchor-id="default_greeting"><code>DEFAULT_GREETING</code></h4>
+<section id="clarke1866" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="clarke1866"><code>CLARKE1866</code></h4>
 </section>
 <div class="card-body">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">String</span>(s<span class="op">::</span><span class="dt">AbstractString</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Create a new <code>String</code> from an existing <code>AbstractString</code>.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">String</span>(v<span class="op">::</span><span class="dt">AbstractVector{UInt8}</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Create a new <code>String</code> object using the data buffer from byte vector <code>v</code>. If <code>v</code> is a <code>Vector{UInt8}</code> it will be truncated to zero length and future modification of <code>v</code> cannot affect the contents of the resulting string. To avoid truncation of <code>Vector{UInt8}</code> data, use <code>String(copy(v))</code>; for other <code>AbstractVector</code> types, <code>String(v)</code> already makes a copy.</p>
-<p>When possible, the memory of <code>v</code> will be used without copying when the <code>String</code> object is created. This is guaranteed to be the case for byte vectors returned by <a href="@ref"><code>take!</code></a> on a writable <a href="@ref"><code>IOBuffer</code></a> and by calls to <a href="@ref"><code>read(io, nb)</code></a>. This allows zero-copy conversion of I/O data to strings. In other cases, <code>Vector{UInt8}</code> data may be copied, but <code>v</code> is truncated anyway to guarantee consistent behavior.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="dt">String</span> <span class="op">&lt;:</span><span class="dt"> AbstractString</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>The default string type in Julia, used by e.g.&nbsp;string literals.</p>
-<p><code>String</code>s are immutable sequences of <code>Char</code>s. A <code>String</code> is stored internally as a contiguous byte array, and while they are interpreted as being UTF-8 encoded, they can be composed of any byte sequence. Use <a href="@ref"><code>isvalid</code></a> to validate that the underlying byte sequence is valid as UTF-8.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb65"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Datum</span>(name, a, f_inv)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>A geodetic datum defined by an ellipsoid of revolution.</p>
+<section id="fields-8" class="level1">
+<h1>Fields</h1>
+<ul>
+<li><code>name::String</code>: Human-readable name (e.g.&nbsp;<code>"WGS 84"</code>).</li>
+<li><code>a::Float64</code>: Semi-major axis in meters (equatorial radius).</li>
+<li><code>f_inv::Float64</code>: Inverse flattening (1/f). Use <code>Inf</code> for a perfect sphere.</li>
+</ul>
+<section id="examples-16" class="level3">
+<h3 class="anchored" data-anchor-id="examples-16">Examples</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb66"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> WGS84</span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a><span class="fu">Datum</span>(<span class="st">"WGS 84"</span>, a<span class="op">=</span><span class="fl">6.378137e6</span>, <span class="fl">1</span><span class="op">/</span>f<span class="op">=</span><span class="fl">298.257223563</span>)</span>
+<span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb66-4"><a href="#cb66-4" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">semi_major_axis</span>(WGS84)</span>
+<span id="cb66-5"><a href="#cb66-5" aria-hidden="true" tabindex="-1"></a><span class="fl">6.378137e6</span></span>
+<span id="cb66-6"><a href="#cb66-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb66-7"><a href="#cb66-7" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">semi_minor_axis</span>(WGS84)</span>
+<span id="cb66-8"><a href="#cb66-8" aria-hidden="true" tabindex="-1"></a><span class="fl">6.356752314245179e6</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+</div>
+</div>
+<div class="card mb-3">
+<section id="default_datum" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="default_datum"><code>DEFAULT_DATUM</code></h4>
+</section>
+<div class="card-body">
+<p>No documentation found for private binding <code>Base.RefValue</code>.</p>
+<section id="summary" class="level1">
+<h1>Summary</h1>
+<pre><code>mutable struct Base.RefValue{T}</code></pre>
+</section>
+<section id="fields-9" class="level1">
+<h1>Fields</h1>
+<pre><code>x :: T</code></pre>
+</section>
+<section id="supertype-hierarchy" class="level1">
+<h1>Supertype Hierarchy</h1>
+<pre><code>Base.RefValue{T} &lt;: Ref{T} &lt;: Any</code></pre>
+</section>
+</div>
+</div>
+<div class="card mb-3">
+<section id="grs80" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="grs80"><code>GRS80</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb70"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Datum</span>(name, a, f_inv)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>A geodetic datum defined by an ellipsoid of revolution.</p>
+<section id="fields-10" class="level1">
+<h1>Fields</h1>
+<ul>
+<li><code>name::String</code>: Human-readable name (e.g.&nbsp;<code>"WGS 84"</code>).</li>
+<li><code>a::Float64</code>: Semi-major axis in meters (equatorial radius).</li>
+<li><code>f_inv::Float64</code>: Inverse flattening (1/f). Use <code>Inf</code> for a perfect sphere.</li>
+</ul>
+<section id="examples-17" class="level3">
+<h3 class="anchored" data-anchor-id="examples-17">Examples</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb71"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> WGS84</span>
+<span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a><span class="fu">Datum</span>(<span class="st">"WGS 84"</span>, a<span class="op">=</span><span class="fl">6.378137e6</span>, <span class="fl">1</span><span class="op">/</span>f<span class="op">=</span><span class="fl">298.257223563</span>)</span>
+<span id="cb71-3"><a href="#cb71-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb71-4"><a href="#cb71-4" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">semi_major_axis</span>(WGS84)</span>
+<span id="cb71-5"><a href="#cb71-5" aria-hidden="true" tabindex="-1"></a><span class="fl">6.378137e6</span></span>
+<span id="cb71-6"><a href="#cb71-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb71-7"><a href="#cb71-7" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">semi_minor_axis</span>(WGS84)</span>
+<span id="cb71-8"><a href="#cb71-8" aria-hidden="true" tabindex="-1"></a><span class="fl">6.356752314245179e6</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+</div>
+</div>
+<div class="card mb-3">
+<section id="wgs72" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="wgs72"><code>WGS72</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb72"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Datum</span>(name, a, f_inv)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>A geodetic datum defined by an ellipsoid of revolution.</p>
+<section id="fields-11" class="level1">
+<h1>Fields</h1>
+<ul>
+<li><code>name::String</code>: Human-readable name (e.g.&nbsp;<code>"WGS 84"</code>).</li>
+<li><code>a::Float64</code>: Semi-major axis in meters (equatorial radius).</li>
+<li><code>f_inv::Float64</code>: Inverse flattening (1/f). Use <code>Inf</code> for a perfect sphere.</li>
+</ul>
+<section id="examples-18" class="level3">
+<h3 class="anchored" data-anchor-id="examples-18">Examples</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb73"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> WGS84</span>
+<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a><span class="fu">Datum</span>(<span class="st">"WGS 84"</span>, a<span class="op">=</span><span class="fl">6.378137e6</span>, <span class="fl">1</span><span class="op">/</span>f<span class="op">=</span><span class="fl">298.257223563</span>)</span>
+<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb73-4"><a href="#cb73-4" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">semi_major_axis</span>(WGS84)</span>
+<span id="cb73-5"><a href="#cb73-5" aria-hidden="true" tabindex="-1"></a><span class="fl">6.378137e6</span></span>
+<span id="cb73-6"><a href="#cb73-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb73-7"><a href="#cb73-7" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">semi_minor_axis</span>(WGS84)</span>
+<span id="cb73-8"><a href="#cb73-8" aria-hidden="true" tabindex="-1"></a><span class="fl">6.356752314245179e6</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+</div>
+</div>
+<div class="card mb-3">
+<section id="wgs84" class="level4 card-header api-item-header">
+<h4 class="anchored" data-anchor-id="wgs84"><code>WGS84</code></h4>
+</section>
+<div class="card-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb74"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Datum</span>(name, a, f_inv)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>A geodetic datum defined by an ellipsoid of revolution.</p>
+<section id="fields-12" class="level1">
+<h1>Fields</h1>
+<ul>
+<li><code>name::String</code>: Human-readable name (e.g.&nbsp;<code>"WGS 84"</code>).</li>
+<li><code>a::Float64</code>: Semi-major axis in meters (equatorial radius).</li>
+<li><code>f_inv::Float64</code>: Inverse flattening (1/f). Use <code>Inf</code> for a perfect sphere.</li>
+</ul>
+<section id="examples-19" class="level3">
+<h3 class="anchored" data-anchor-id="examples-19">Examples</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb75"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> WGS84</span>
+<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a><span class="fu">Datum</span>(<span class="st">"WGS 84"</span>, a<span class="op">=</span><span class="fl">6.378137e6</span>, <span class="fl">1</span><span class="op">/</span>f<span class="op">=</span><span class="fl">298.257223563</span>)</span>
+<span id="cb75-3"><a href="#cb75-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb75-4"><a href="#cb75-4" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">semi_major_axis</span>(WGS84)</span>
+<span id="cb75-5"><a href="#cb75-5" aria-hidden="true" tabindex="-1"></a><span class="fl">6.378137e6</span></span>
+<span id="cb75-6"><a href="#cb75-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb75-7"><a href="#cb75-7" aria-hidden="true" tabindex="-1"></a>julia<span class="op">&gt;</span> <span class="fu">semi_minor_axis</span>(WGS84)</span>
+<span id="cb75-8"><a href="#cb75-8" aria-hidden="true" tabindex="-1"></a><span class="fl">6.356752314245179e6</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
 </div>
 </div>
 
@@ -746,8 +1292,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./getting-started.html" class="pagination-link" aria-label="Getting Started">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Getting Started</span>
+      <a href="./areas-and-bounds.html" class="pagination-link" aria-label="Areas and Bounding Boxes">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Areas and Bounding Boxes</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">

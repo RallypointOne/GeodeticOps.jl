@@ -4,7 +4,18 @@
     "href": "index.html",
     "title": "GeodeticOps.jl",
     "section": "",
-    "text": "Overview\nWelcome to the documentation for GeodeticOps.jl.\nGeodeticOps.jl provides geodetic operations and coordinate transformations for Julia.",
+    "text": "Features\nGeodeticOps.jl is a pure-Julia package for geodetic computations on Earth’s ellipsoid.",
+    "crumbs": [
+      "Docs",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>GeodeticOps.jl</span>"
+    ]
+  },
+  {
+    "objectID": "index.html#features",
+    "href": "index.html#features",
+    "title": "GeodeticOps.jl",
+    "section": "",
+    "text": "7 coordinate types with automatic conversions: LLA, LLARad, ECEF, ENU, NED, AER, UTM\nGeodesic distances: Haversine (great-circle) and Vincenty (ellipsoidal)\nForward and inverse geodesic problems via Vincenty’s formulae\nGeodesic interpolation: intermediate points and midpoints along geodesics\nPolygon area on the ellipsoid using spherical excess\nBounding boxes: axis-aligned and distance-based\nMultiple datums: WGS84 (default), GRS80, Clarke 1866, WGS72",
     "crumbs": [
       "Docs",
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>GeodeticOps.jl</span>"
@@ -22,11 +33,11 @@
     ]
   },
   {
-    "objectID": "index.html#quickstart",
-    "href": "index.html#quickstart",
+    "objectID": "index.html#quick-example",
+    "href": "index.html#quick-example",
     "title": "GeodeticOps.jl",
-    "section": "Quickstart",
-    "text": "Quickstart\n\nprintln(\"Hello, World!\")\n\nHello, World!",
+    "section": "Quick Example",
+    "text": "Quick Example\n\nusing GeodeticOps\n\nnyc = LLA(-74.006, 40.7128)\nlondon = LLA(-0.1278, 51.5074)\n\nd = distance(nyc, london)\nprintln(\"NYC -&gt; London: $(round(d / 1000, digits=1)) km\")\nprintln(\"Bearing:       $(round(bearing(nyc, london), digits=1))deg\")\nprintln(\"Midpoint:      $(midpoint(nyc, london))\")\n\nNYC -&gt; London: 5585.2 km\nBearing:       51.2deg\nMidpoint:      LLA(lon=-41.27790142901274°, lat=52.3894744727656°, alt=0.0m)\n\n\nAll operations default to WGS84. Pass datum=GRS80 (or any Datum) to override, or set DEFAULT_DATUM[] = GRS80 to change the global default.\n\n\n\n\n\n\n\nFigure 1: Geodesic path (blue) versus rhumb line (dashed gray) from New York City to London. The geodesic curves northward because it follows the shortest path on the ellipsoid.",
     "crumbs": [
       "Docs",
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>GeodeticOps.jl</span>"
@@ -37,32 +48,263 @@
     "href": "getting-started.html",
     "title": "Getting Started",
     "section": "",
-    "text": "Basic Usage",
+    "text": "Creating Coordinates\nThis tutorial walks through the core features of GeodeticOps.jl.\nThe most common coordinate type is LLA (longitude, latitude, altitude):\n# New York City (altitude defaults to 0)\nnyc = LLA(-74.006, 40.7128)\n\nLLA(lon=-74.006°, lat=40.7128°, alt=0.0m)\n# Mount Everest summit\neverest = LLA(86.925, 27.988, 8848.86)\n\nLLA(lon=86.925°, lat=27.988°, alt=8848.86m)\nAll coordinate types are parametric. The type parameter promotes automatically:\nLLA(1, 2, 3)        # Int\n\nLLA(lon=1°, lat=2°, alt=3m)\nLLA(1.0f0, 2.0f0)   # Float32\n\nLLA(lon=1.0°, lat=2.0°, alt=0.0m)\nLLA{Float32}(1, 2)   # Explicit type parameter\n\nLLA(lon=1.0°, lat=2.0°, alt=0.0m)",
     "crumbs": [
       "Docs",
-      "Getting Started"
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Getting Started</span>"
     ]
   },
   {
-    "objectID": "getting-started.html#basic-usage",
-    "href": "getting-started.html#basic-usage",
+    "objectID": "getting-started.html#datums",
+    "href": "getting-started.html#datums",
     "title": "Getting Started",
+    "section": "Datums",
+    "text": "Datums\nA Datum defines the shape of the reference ellipsoid. GeodeticOps exports four common datums:\n\nfor d in [WGS84, GRS80, CLARKE1866, WGS72]\n    println(d)\nend\n\nDatum(\"WGS 84\", a=6.378137e6, 1/f=298.257223563)\nDatum(\"GRS 80\", a=6.378137e6, 1/f=298.257222101)\nDatum(\"Clarke 1866\", a=6.3782064e6, 1/f=294.978698214)\nDatum(\"WGS 72\", a=6.378135e6, 1/f=298.26)\n\n\nAll operations default to WGS84. You can override per-call with the datum keyword, or change the global default via DEFAULT_DATUM[]:\n\n# Per-call override\ndistance(nyc, LLA(-0.1278, 51.5074); datum=GRS80)\n\n5.585233578986238e6\n\n\n\n# Change the global default\nDEFAULT_DATUM[] = GRS80\nDEFAULT_DATUM[]\n\nDatum(\"GRS 80\", a=6.378137e6, 1/f=298.257222101)\n\n\n\n# Restore WGS84\nDEFAULT_DATUM[] = WGS84\n\nDatum(\"WGS 84\", a=6.378137e6, 1/f=298.257223563)",
+    "crumbs": [
+      "Docs",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Getting Started</span>"
+    ]
+  },
+  {
+    "objectID": "getting-started.html#measuring-distances",
+    "href": "getting-started.html#measuring-distances",
+    "title": "Getting Started",
+    "section": "Measuring Distances",
+    "text": "Measuring Distances\nHaversine gives a fast great-circle approximation:\n\nlondon = LLA(-0.1278, 51.5074)\nhaversine(nyc, london)\n\n5.570229848664454e6\n\n\nVincenty is more accurate, accounting for the ellipsoid:\n\ndistance(nyc, london)\n\n5.585233578943206e6\n\n\nThe two methods agree to within ~0.5% for most distances.",
+    "crumbs": [
+      "Docs",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Getting Started</span>"
+    ]
+  },
+  {
+    "objectID": "getting-started.html#bearing",
+    "href": "getting-started.html#bearing",
+    "title": "Getting Started",
+    "section": "Bearing",
+    "text": "Bearing\nCompute the initial bearing (forward azimuth) from one point to another:\n\nbearing(nyc, london)  # degrees clockwise from north\n\n51.24122911946578",
+    "crumbs": [
+      "Docs",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Getting Started</span>"
+    ]
+  },
+  {
+    "objectID": "getting-started.html#computing-destinations",
+    "href": "getting-started.html#computing-destinations",
+    "title": "Getting Started",
+    "section": "Computing Destinations",
+    "text": "Computing Destinations\nGiven a starting point, bearing, and distance, find the destination:\n\n# 1000 km due north from the equator\nforward_geodesic(LLA(0.0, 0.0), 0.0, 1_000_000.0)\n\nLLA(lon=0.0°, lat=9.042944436329899°, alt=0.0m)",
+    "crumbs": [
+      "Docs",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Getting Started</span>"
+    ]
+  },
+  {
+    "objectID": "getting-started.html#interpolation-along-a-geodesic",
+    "href": "getting-started.html#interpolation-along-a-geodesic",
+    "title": "Getting Started",
+    "section": "Interpolation Along a Geodesic",
+    "text": "Interpolation Along a Geodesic\nFind the point at any fraction along a geodesic path:\n\ntokyo = LLA(139.6917, 35.6895)\n\nmidpoint(nyc, tokyo)\n\nLLA(lon=-153.64271957455668°, lat=69.72196141701565°, alt=0.0m)\n\n\n\n# Quarter-way point\nintermediate_point(nyc, tokyo, 0.25)\n\nLLA(lon=-96.60006370071237°, lat=60.8407105106562°, alt=0.0m)",
+    "crumbs": [
+      "Docs",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Getting Started</span>"
+    ]
+  },
+  {
+    "objectID": "getting-started.html#coordinate-conversions",
+    "href": "getting-started.html#coordinate-conversions",
+    "title": "Getting Started",
+    "section": "Coordinate Conversions",
+    "text": "Coordinate Conversions\nConvert between any supported coordinate types:\n\n# LLA to ECEF (Earth-Centered, Earth-Fixed)\necef = ECEF(nyc, WGS84)\n\nECEF(x=1.333998456149258e6, y=-4.654044842733645e6, z=4.1383002386952764e6)\n\n\n\n# ECEF back to LLA\nLLA(ecef, WGS84)\n\nLLA(lon=-74.006°, lat=40.7128°, alt=0.0m)\n\n\n\n# LLA to UTM\nutm = UTM(nyc, WGS84)\n\nUTM(zone=18N, easting=583959.372324113, northing=4.507350998397536e6)\n\n\nLocal coordinate frames (ENU, NED, AER) require a reference point:\n\n# Displacement from NYC to a nearby point in East-North-Up\nnearby = LLA(-73.996, 40.722, 50.0)\nENU(nearby, nyc, WGS84)\n\nENU(e=844.8835733062557, n=1021.7018510246394, u=49.86208985488406)\n\n\nSee Coordinates for the full list of types and conversion paths.",
+    "crumbs": [
+      "Docs",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Getting Started</span>"
+    ]
+  },
+  {
+    "objectID": "getting-started.html#polygon-area",
+    "href": "getting-started.html#polygon-area",
+    "title": "Getting Started",
+    "section": "Polygon Area",
+    "text": "Polygon Area\nCompute the area of a polygon on the ellipsoid:\n\n# Approximate area of a 1 deg x 1 deg square at the equator\npts = [LLA(0, 0), LLA(1, 0), LLA(1, 1), LLA(0, 1)]\narea_km2 = polygon_area(pts) / 1e6\nprintln(\"$(round(area_km2, digits=0)) km^2\")\n\n12364.0 km^2",
+    "crumbs": [
+      "Docs",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Getting Started</span>"
+    ]
+  },
+  {
+    "objectID": "getting-started.html#bounding-boxes",
+    "href": "getting-started.html#bounding-boxes",
+    "title": "Getting Started",
+    "section": "Bounding Boxes",
+    "text": "Bounding Boxes\nCompute the bounding box of a set of points:\n\npts = [LLA(-74.0, 40.0), LLA(-73.0, 41.0), LLA(-75.0, 40.5)]\nboundingbox(pts)\n\nBoundingBox(lon=[-75.0, -73.0], lat=[40.0, 41.0])\n\n\nOr find the bounding box of all points within a given distance:\n\ndestination_boundingbox(nyc, 50_000.0)  # 50 km radius\n\nBoundingBox(lon=[-74.59771173143642, -73.41428826856358], lat=[40.26252811430199, 41.16303665323765])",
+    "crumbs": [
+      "Docs",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Getting Started</span>"
+    ]
+  },
+  {
+    "objectID": "coordinates.html",
+    "href": "coordinates.html",
+    "title": "Coordinates",
     "section": "",
-    "text": "using GeodeticOps",
+    "text": "Type Hierarchy\nGeodeticOps provides seven coordinate types organized into a type hierarchy that distinguishes fixed coordinates (those that describe a position on the ellipsoid) from relative coordinates (those measured from a local reference point).\nAll geodetic operations (distance, bearing, polygon_area, etc.) accept any AbstractFixedCoords. If you pass an ECEF or UTM, it is automatically converted to LLA internally. Passing a relative coordinate type like ENU produces a compile-time method error.",
     "crumbs": [
       "Docs",
-      "Getting Started"
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Coordinates</span>"
     ]
   },
   {
-    "objectID": "getting-started.html#examples",
-    "href": "getting-started.html#examples",
-    "title": "Getting Started",
-    "section": "Examples",
-    "text": "Examples\nTODO: Add examples here.",
+    "objectID": "coordinates.html#type-hierarchy",
+    "href": "coordinates.html#type-hierarchy",
+    "title": "Coordinates",
+    "section": "",
+    "text": "AbstractCoords{T}\n├── AbstractFixedCoords{T}       # convertible to LLA with only a Datum\n│   ├── LLA{T}                   # longitude, latitude (degrees), altitude\n│   ├── LLARad{T}                # longitude, latitude (radians), altitude\n│   ├── ECEF{T}                  # Earth-Centered, Earth-Fixed (x, y, z)\n│   └── UTM{T}                   # Universal Transverse Mercator\n└── AbstractRelativeCoords{T}    # require a reference point\n    ├── ENU{T}                   # East, North, Up\n    ├── NED{T}                   # North, East, Down\n    └── AER{T}                   # Azimuth, Elevation, Range",
     "crumbs": [
       "Docs",
-      "Getting Started"
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Coordinates</span>"
+    ]
+  },
+  {
+    "objectID": "coordinates.html#fixed-coordinate-types",
+    "href": "coordinates.html#fixed-coordinate-types",
+    "title": "Coordinates",
+    "section": "Fixed Coordinate Types",
+    "text": "Fixed Coordinate Types\n\nLLA – Geodetic Coordinates (Degrees)\nThe most common type. Longitude and latitude are in degrees, altitude in meters above the ellipsoid.\n\nLLA(-74.006, 40.7128)          # NYC, alt=0\n\nLLA(lon=-74.006°, lat=40.7128°, alt=0.0m)\n\n\n\nLLA(86.925, 27.988, 8848.86)   # Everest summit\n\nLLA(lon=86.925°, lat=27.988°, alt=8848.86m)\n\n\n\n\nLLARad – Geodetic Coordinates (Radians)\nSame as LLA but angles in radians. Converts to/from LLA without a datum:\n\nr = LLARad(LLA(180.0, 45.0))\n\nLLARad(lon=3.141592653589793 rad, lat=0.7853981633974483 rad, alt=0.0m)\n\n\n\nLLA(r)\n\nLLA(lon=180.0°, lat=45.0°, alt=0.0m)\n\n\n\n\nECEF – Earth-Centered, Earth-Fixed\nCartesian coordinates in meters with origin at the center of the ellipsoid. Requires a datum for conversion:\n\necef = ECEF(LLA(0.0, 0.0), WGS84)  # equator / prime meridian\n\nECEF(x=6.378137e6, y=0.0, z=0.0)\n\n\n\nLLA(ecef, WGS84)\n\nLLA(lon=0.0°, lat=0.0°, alt=0.0m)\n\n\n\n\nUTM – Universal Transverse Mercator\nProjected coordinates with zone number and hemisphere flag. The zone is auto-detected from longitude:\n\nutm = UTM(LLA(-74.006, 40.7128), WGS84)\n\nUTM(zone=18N, easting=583959.372324113, northing=4.507350998397536e6)\n\n\n\nLLA(utm, WGS84)\n\nLLA(lon=-74.00599999999051°, lat=40.71280000050855°, alt=0.0m)\n\n\nYou can force a specific zone:\n\nUTM(LLA(-74.006, 40.7128), WGS84; zone=17)\n\nUTM(zone=17N, easting=1.0909710567325049e6, northing=4.530466275427255e6)",
+    "crumbs": [
+      "Docs",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Coordinates</span>"
+    ]
+  },
+  {
+    "objectID": "coordinates.html#relative-coordinate-types",
+    "href": "coordinates.html#relative-coordinate-types",
+    "title": "Coordinates",
+    "section": "Relative Coordinate Types",
+    "text": "Relative Coordinate Types\nThese describe positions relative to a local reference point. They require both a reference LLA and a Datum for conversion.\n\nENU – East-North-Up\nLocal tangent plane with axes pointing east, north, and up:\n\nref = LLA(-74.006, 40.7128)              # NYC\ntarget = LLA(-73.996, 40.722, 50.0)\nenu = ENU(target, ref, WGS84)\n\nENU(e=844.8835733062557, n=1021.7018510246394, u=49.86208985488406)\n\n\n\n# Convert back\nLLA(enu, ref, WGS84)\n\nLLA(lon=-73.996°, lat=40.721999999999994°, alt=49.99999999906868m)\n\n\n\n\nNED – North-East-Down\nAviation/aerospace convention. Related to ENU by a simple axis swap:\n\nned = NED(enu)  # no datum needed, pure axis reordering\n\nNED(n=1021.7018510246394, e=844.8835733062557, d=-49.86208985488406)\n\n\n\nENU(ned)        # round-trip\n\nENU(e=844.8835733062557, n=1021.7018510246394, u=49.86208985488406)\n\n\n\n\nAER – Azimuth-Elevation-Range\nSpherical coordinates relative to a reference point. Converts to/from ENU without a datum:\n\n# Due north, 45 deg elevation, 1000 m range\naer = AER(0.0, 45.0, 1000.0)\nENU(aer)\n\nENU(e=0.0, n=707.1067811865476, u=707.1067811865474)\n\n\n\n# From two LLA points\nAER(target, ref, WGS84)\n\nAER(az=39.58862158981313°, el=2.1538513699437423°, range=1326.7212038837015m)",
+    "crumbs": [
+      "Docs",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Coordinates</span>"
+    ]
+  },
+  {
+    "objectID": "coordinates.html#conversion-map",
+    "href": "coordinates.html#conversion-map",
+    "title": "Coordinates",
+    "section": "Conversion Map",
+    "text": "Conversion Map\nThe diagram below shows all supported direct conversions. Arrows indicate constructors; dashed arrows require a datum, solid arrows do not.\nLLA ←--→ LLARad          (no datum)\nLLA ←--→ ECEF            (datum)\nLLA ←--→ UTM             (datum)\nLLA ←--→ ENU ←--→ NED    (datum + ref)   (no datum)\nLLA ←--→ AER             (datum + ref)\nENU ←--→ AER             (no datum)\nECEF ←--→ ENU            (datum + ref)\nECEF ←--→ UTM            (datum)\nEvery conversion is a constructor call:\n\np = LLA(-74.006, 40.7128)\n\n# Chain conversions\np |&gt; x -&gt; ECEF(x, WGS84) |&gt; x -&gt; LLA(x, WGS84)\n\nLLA(lon=-74.006°, lat=40.7128°, alt=0.0m)",
+    "crumbs": [
+      "Docs",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Coordinates</span>"
+    ]
+  },
+  {
+    "objectID": "coordinates.html#visualizing-ecef",
+    "href": "coordinates.html#visualizing-ecef",
+    "title": "Coordinates",
+    "section": "Visualizing ECEF",
+    "text": "Visualizing ECEF\nThe plot below shows three cities converted to ECEF coordinates on a wireframe ellipsoid.\n\na = 1.0\nf_exag = flattening(WGS84) * 50  # exaggerate flattening for visibility\nb = a * (1 - f_exag)\n\ntheta = range(-pi/2, pi/2, 40)\nphi = range(0, 2pi, 80)\nX = [a * cos(t) * cos(p) for t in theta, p in phi]\nY = [a * cos(t) * sin(p) for t in theta, p in phi]\nZ = [b * sin(t) for t in theta, p in phi]\n\n# Cities in normalized ECEF\ncities = [\n    (\"NYC\", LLA(-74.006, 40.7128)),\n    (\"London\", LLA(-0.1278, 51.5074)),\n    (\"Tokyo\", LLA(139.6917, 35.6895)),\n]\nscale = semi_major_axis(WGS84)\ncity_ecefs = [(name, ECEF(lla, WGS84)) for (name, lla) in cities]\n\nfig = Figure(size=(600, 500))\nax = Axis3(fig[1, 1], aspect=:data, xlabel=\"X\", ylabel=\"Y\", zlabel=\"Z\")\nsurface!(ax, X, Y, Z, alpha=0.2, colormap=[:lightblue, :lightblue], shading=NoShading)\nwireframe!(ax, X[1:4:end, 1:4:end], Y[1:4:end, 1:4:end], Z[1:4:end, 1:4:end],\n    color=(:steelblue, 0.3), linewidth=0.5)\n\nfor (name, ecef) in city_ecefs\n    px, py, pz = ecef.x / scale, ecef.y / scale, ecef.z / scale\n    # Adjust for exaggerated flattening\n    pz_exag = pz * (b / (a * (1 - flattening(WGS84))))\n    scatter!(ax, [px], [py], [pz_exag], color=:crimson, markersize=12)\n    text!(ax, px, py, pz_exag; text=name, fontsize=12, align=(:left, :bottom), offset=(5, 5))\nend\nfig\n\n\n\n\n\n\nFigure 3.1: Three cities plotted in ECEF coordinates on a wireframe ellipsoid (flattening exaggerated 50x for visibility).",
+    "crumbs": [
+      "Docs",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Coordinates</span>"
+    ]
+  },
+  {
+    "objectID": "geodesics.html",
+    "href": "geodesics.html",
+    "title": "Geodesics",
+    "section": "",
+    "text": "Distance\nA geodesic is the shortest path between two points on the surface of an ellipsoid – the curved-surface equivalent of a straight line. On a flat map (equirectangular projection), geodesics appear as curves because the map distorts the ellipsoid’s geometry.\nGeodeticOps provides two distance functions:\nnyc = LLA(-74.006, 40.7128)\nlondon = LLA(-0.1278, 51.5074)\n\nh = haversine(nyc, london)\nv = distance(nyc, london)\n\nprintln(\"Haversine: $(round(h / 1000, digits=1)) km\")\nprintln(\"Vincenty:  $(round(v / 1000, digits=1)) km\")\nprintln(\"Difference: $(round(abs(h - v) / 1000, digits=1)) km ($(round(abs(h - v) / v * 100, digits=2))%)\")\n\nHaversine: 5570.2 km\nVincenty:  5585.2 km\nDifference: 15.0 km (0.27%)\nFor most applications, the difference is negligible. Use distance (Vincenty) when sub-kilometer accuracy matters.",
+    "crumbs": [
+      "Docs",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Geodesics</span>"
+    ]
+  },
+  {
+    "objectID": "geodesics.html#distance",
+    "href": "geodesics.html#distance",
+    "title": "Geodesics",
+    "section": "",
+    "text": "Function\nMethod\nAccuracy\nSpeed\n\n\n\n\nhaversine\nGreat-circle on a sphere\n~0.5%\nFast\n\n\ndistance\nVincenty on the ellipsoid\n~0.5 mm\nIterative",
+    "crumbs": [
+      "Docs",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Geodesics</span>"
+    ]
+  },
+  {
+    "objectID": "geodesics.html#bearing",
+    "href": "geodesics.html#bearing",
+    "title": "Geodesics",
+    "section": "Bearing",
+    "text": "Bearing\nThe bearing (or forward azimuth) is the initial direction of travel, measured in degrees clockwise from north:\n\nbearing(nyc, london)\n\n51.24122911946578\n\n\nforward_azimuth is an alias for bearing.",
+    "crumbs": [
+      "Docs",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Geodesics</span>"
+    ]
+  },
+  {
+    "objectID": "geodesics.html#the-inverse-problem",
+    "href": "geodesics.html#the-inverse-problem",
+    "title": "Geodesics",
+    "section": "The Inverse Problem",
+    "text": "The Inverse Problem\nvincenty_inverse returns the full solution to the inverse geodesic problem – distance plus both azimuths:\n\nvincenty_inverse(nyc, london)\n\n(distance = 5.585233578943206e6, azimuth1 = 51.24122911946578, azimuth2 = 288.3689981132953)\n\n\nThe azimuth2 field is the reverse azimuth at the destination (the direction you’d be facing when you arrive, measured clockwise from north).",
+    "crumbs": [
+      "Docs",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Geodesics</span>"
+    ]
+  },
+  {
+    "objectID": "geodesics.html#the-forward-problem",
+    "href": "geodesics.html#the-forward-problem",
+    "title": "Geodesics",
+    "section": "The Forward Problem",
+    "text": "The Forward Problem\nGiven a starting point, bearing, and distance, forward_geodesic computes the destination:\n\n# 500 km northeast from NYC\nforward_geodesic(nyc, 45.0, 500_000.0)\n\nLLA(lon=-69.61180718365085°, lat=43.81439479626134°, alt=0.0m)\n\n\nThe plot below shows destinations at every 15 degrees of bearing from a point at 45 deg N. Notice the asymmetry: east/west destinations span more longitude than north/south destinations span latitude, because meridians converge toward the poles.\n\norigin = LLA(0.0, 45.0)\ndist = 1_500_000.0\nbearings_deg = 0:15:345\ndests = [forward_geodesic(origin, az, dist) for az in bearings_deg]\n\nfig = Figure(size=(550, 500))\nax = Axis(fig[1, 1], xlabel=\"Longitude (deg)\", ylabel=\"Latitude (deg)\", aspect=DataAspect())\nfor d in dests\n    lines!(ax, [origin.lon, d.lon], [origin.lat, d.lat], color=(:steelblue, 0.4), linewidth=1)\nend\nscatter!(ax, [d.lon for d in dests], [d.lat for d in dests], color=:steelblue, markersize=8)\nscatter!(ax, [origin.lon], [origin.lat], color=:crimson, markersize=14)\ntext!(ax, origin.lon + 0.5, origin.lat + 0.5; text=\"Origin\", fontsize=12, align=(:left, :bottom))\n\n# Label cardinal directions\nfor (az, label) in [(0, \"N\"), (90, \"E\"), (180, \"S\"), (270, \"W\")]\n    d = forward_geodesic(origin, Float64(az), dist)\n    text!(ax, d.lon, d.lat; text=label, fontsize=13, align=(:center, :center),\n        color=:gray30, offset=(0, 12))\nend\nfig\n\n\n\n\n\n\nFigure 4.1: Destinations 1500 km from 45 deg N, 0 deg E at bearings 0 deg through 345 deg. The asymmetry reflects meridian convergence at higher latitudes.",
+    "crumbs": [
+      "Docs",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Geodesics</span>"
+    ]
+  },
+  {
+    "objectID": "geodesics.html#interpolation",
+    "href": "geodesics.html#interpolation",
+    "title": "Geodesics",
+    "section": "Interpolation",
+    "text": "Interpolation\nintermediate_point returns the point at a given fraction along the geodesic. midpoint is a shortcut for fraction = 0.5.\n\ntokyo = LLA(139.6917, 35.6895)\n\nmidpoint(nyc, tokyo)\n\nLLA(lon=-153.64271957455668°, lat=69.72196141701565°, alt=0.0m)\n\n\n\n# Points at 0%, 25%, 50%, 75%, 100%\nfor f in 0.0:0.25:1.0\n    p = intermediate_point(nyc, london, f)\n    println(\"f=$f: $p\")\nend\n\nf=0.0: LLA(lon=-74.006°, lat=40.7128°, alt=0.0m)\nf=0.25: LLA(lon=-59.4518518641905°, lat=47.72478882322425°, alt=0.0m)\nf=0.5: LLA(lon=-41.27790142901274°, lat=52.3894744727656°, alt=0.0m)\nf=0.75: LLA(lon=-20.491869592369756°, lat=53.77005735563994°, alt=0.0m)\nf=1.0: LLA(lon=-0.12780000011453324°, lat=51.507400000012495°, alt=0.0m)\n\n\n\nfracs = range(0, 1, 20)\npts = [intermediate_point(nyc, london, f) for f in fracs]\nlons = [p.lon for p in pts]\nlats = [p.lat for p in pts]\n\nfig = Figure(size=(700, 350))\nax = Axis(fig[1, 1], xlabel=\"Longitude (deg)\", ylabel=\"Latitude (deg)\")\nscatter!(ax, lons, lats, color=collect(fracs), colormap=:viridis, markersize=10)\nColorbar(fig[1, 2], colormap=:viridis, limits=(0, 1), label=\"Fraction\")\ntext!(ax, lons[1] - 1, lats[1] - 1.5; text=\"NYC\", fontsize=13, align=(:center, :top))\ntext!(ax, lons[end] + 1.5, lats[end] + 0.5; text=\"London\", fontsize=13, align=(:left, :bottom))\nfig\n\n\n\n\n\n\nFigure 4.2: Twenty evenly-spaced intermediate points along the geodesic from New York City to London. Color indicates fraction along the path.",
+    "crumbs": [
+      "Docs",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Geodesics</span>"
+    ]
+  },
+  {
+    "objectID": "geodesics.html#geodesic-vs.-rhumb-line",
+    "href": "geodesics.html#geodesic-vs.-rhumb-line",
+    "title": "Geodesics",
+    "section": "Geodesic vs. Rhumb Line",
+    "text": "Geodesic vs. Rhumb Line\nA rhumb line (loxodrome) crosses all meridians at the same angle – it appears as a straight line on a Mercator map. A geodesic is shorter but changes bearing continuously.\n\npairs = [\n    (LLA(-74.006, 40.7128), LLA(-0.1278, 51.5074), \"NYC\", \"London\"),\n    (LLA(-122.4194, 37.7749), LLA(139.6917, 35.6895), \"SF\", \"Tokyo\"),\n    (LLA(-43.1729, -22.9068), LLA(18.4241, -33.9249), \"Rio\", \"Cape Town\"),\n]\n\nfig = Figure(size=(700, 700))\nfor (i, (a, b, name_a, name_b)) in enumerate(pairs)\n    ax = Axis(fig[i, 1], xlabel= i == 3 ? \"Longitude (deg)\" : \"\", ylabel=\"Latitude (deg)\",\n        title=\"$name_a to $name_b\")\n\n    # Geodesic\n    n = 100\n    geo = [intermediate_point(a, b, f) for f in range(0, 1, n)]\n    lines!(ax, [p.lon for p in geo], [p.lat for p in geo], color=:steelblue, linewidth=2.5, label=\"Geodesic\")\n\n    # Rhumb line\n    lines!(ax, collect(range(a.lon, b.lon, n)), collect(range(a.lat, b.lat, n)),\n        color=:gray60, linewidth=1.5, linestyle=:dash, label=\"Rhumb line\")\n\n    scatter!(ax, [a.lon, b.lon], [a.lat, b.lat], color=:crimson, markersize=10)\n    text!(ax, a.lon, a.lat; text=name_a, fontsize=11, offset=(0, -12), align=(:center, :top))\n    text!(ax, b.lon, b.lat; text=name_b, fontsize=11, offset=(0, 8), align=(:center, :bottom))\n\n    i == 1 && axislegend(ax, position=:rb)\nend\nfig\n\n\n\n\n\n\nFigure 4.3: Geodesic (blue) versus rhumb line (gray dashed) for three city pairs. The geodesic always curves toward the nearer pole.\n\n\n\n\nNote: The San Francisco to Tokyo geodesic curves far northward over the Pacific – this is why transpacific flights follow polar routes.",
+    "crumbs": [
+      "Docs",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Geodesics</span>"
+    ]
+  },
+  {
+    "objectID": "areas-and-bounds.html",
+    "href": "areas-and-bounds.html",
+    "title": "Areas and Bounding Boxes",
+    "section": "",
+    "text": "Polygon Area\npolygon_area computes the area of a polygon on the ellipsoid in square meters. The polygon is defined by an ordered sequence of vertices and is implicitly closed (the last vertex connects back to the first).\nThe algorithm uses the spherical excess method on the authalic (equal-area) sphere – a sphere with the same surface area as the ellipsoid.\n# 1 deg x 1 deg square at the equator\nsquare = [LLA(0, 0), LLA(1, 0), LLA(1, 1), LLA(0, 1)]\narea = polygon_area(square)\nprintln(\"Area: $(round(area / 1e6, digits=0)) km^2\")\n\nArea: 12364.0 km^2\n# A larger triangle\ntriangle = [LLA(-10, 0), LLA(10, 0), LLA(0, 15)]\narea = polygon_area(triangle)\nprintln(\"Area: $(round(area / 1e6, digits=0)) km^2\")\n\nArea: 1.833537e6 km^2\nVertex order matters for the sign of the spherical excess, but polygon_area returns the absolute value, so either winding order gives the same result:\npolygon_area(reverse(square)) == polygon_area(square)\n\ntrue\npolygons = [\n    (\"Equatorial square\", [LLA(0, 0), LLA(5, 0), LLA(5, 5), LLA(0, 5)]),\n    (\"Mid-latitude square\", [LLA(0, 40), LLA(5, 40), LLA(5, 45), LLA(0, 45)]),\n    (\"Triangle\", [LLA(-5, 20), LLA(5, 20), LLA(0, 30)]),\n]\ncolors = [:steelblue, :seagreen, :coral]\n\nfig = Figure(size=(700, 400))\nax = Axis(fig[1, 1], xlabel=\"Longitude (deg)\", ylabel=\"Latitude (deg)\")\nfor (i, (label, verts)) in enumerate(polygons)\n    lons = [v.lon for v in verts]\n    lats = [v.lat for v in verts]\n    # Close the polygon for plotting\n    push!(lons, lons[1])\n    push!(lats, lats[1])\n\n    poly!(ax, Point2f.(lons, lats), color=(colors[i], 0.3), strokecolor=colors[i], strokewidth=2)\n\n    area_km2 = round(polygon_area(verts) / 1e6, digits=0)\n    cx = sum(v.lon for v in verts) / length(verts)\n    cy = sum(v.lat for v in verts) / length(verts)\n    text!(ax, cx, cy; text=\"$(Int(area_km2)) km^2\", fontsize=11, align=(:center, :center), color=colors[i])\nend\nfig\n\n\n\n\n\n\nFigure 5.1: Three polygons with their computed areas. Polygon area varies with latitude even for the same angular extent.\nNotice that the mid-latitude square has a smaller area than the equatorial square of the same angular extent – this reflects the convergence of meridians at higher latitudes.",
+    "crumbs": [
+      "Docs",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Areas and Bounding Boxes</span>"
+    ]
+  },
+  {
+    "objectID": "areas-and-bounds.html#bounding-boxes",
+    "href": "areas-and-bounds.html#bounding-boxes",
+    "title": "Areas and Bounding Boxes",
+    "section": "Bounding Boxes",
+    "text": "Bounding Boxes\nA BoundingBox is an axis-aligned rectangle in longitude/latitude space:\n\nbb = BoundingBox(-75.0, 40.0, -73.0, 41.0)\n\nBoundingBox(lon=[-75.0, -73.0], lat=[40.0, 41.0])\n\n\n\nFrom Points\nboundingbox computes the smallest bounding box containing a set of points:\n\npts = [LLA(-74.0, 40.0), LLA(-73.5, 40.8), LLA(-74.5, 40.3), LLA(-73.2, 40.5)]\nbb = boundingbox(pts)\n\nBoundingBox(lon=[-74.5, -73.2], lat=[40.0, 40.8])\n\n\n\n\nContainment\nTest whether a point lies within a bounding box:\n\nin(LLA(-74.0, 40.5), bb)\n\ntrue\n\n\n\nin(LLA(-72.0, 40.5), bb)\n\nfalse\n\n\nThe in function handles antimeridian wrapping automatically. If min_lon &gt; max_lon, the box is assumed to wrap across the antimeridian.\n\n\nDestination Bounding Box\ndestination_boundingbox computes the bounding box of all points within a given distance from an origin. This is useful for spatial queries (“find all records within 50 km”):\n\ndestination_boundingbox(LLA(-74.006, 40.7128), 50_000.0)\n\nBoundingBox(lon=[-74.59771173143642, -73.41428826856358], lat=[40.26252811430199, 41.16303665323765])\n\n\n\nfig = Figure(size=(700, 350))\n\n# Left: bounding box from points\npts = [\n    LLA(-74.0, 40.0), LLA(-73.5, 40.8), LLA(-74.5, 40.3),\n    LLA(-73.2, 40.5), LLA(-74.2, 40.9), LLA(-73.8, 40.1),\n]\nbb = boundingbox(pts)\nax1 = Axis(fig[1, 1], xlabel=\"Longitude (deg)\", ylabel=\"Latitude (deg)\", title=\"Bounding Box\")\nscatter!(ax1, [p.lon for p in pts], [p.lat for p in pts], color=:steelblue, markersize=10)\nbox_lons = [bb.min_lon, bb.max_lon, bb.max_lon, bb.min_lon, bb.min_lon]\nbox_lats = [bb.min_lat, bb.min_lat, bb.max_lat, bb.max_lat, bb.min_lat]\nlines!(ax1, box_lons, box_lats, color=:crimson, linewidth=2)\n\n# Right: destination bounding box\norigin = LLA(0.0, 45.0)\ndist = 500_000.0\ndbb = destination_boundingbox(origin, dist)\nax2 = Axis(fig[1, 2], xlabel=\"Longitude (deg)\", ylabel=\"Latitude (deg)\", title=\"Destination Bounding Box\")\n\n# Draw the \"circle\" of destinations\nring = [forward_geodesic(origin, Float64(az), dist) for az in 0:5:360]\npoly!(ax2, Point2f.([p.lon for p in ring], [p.lat for p in ring]),\n    color=(:steelblue, 0.15), strokecolor=:steelblue, strokewidth=1.5)\n\n# Draw the bounding box\ndbox_lons = [dbb.min_lon, dbb.max_lon, dbb.max_lon, dbb.min_lon, dbb.min_lon]\ndbox_lats = [dbb.min_lat, dbb.min_lat, dbb.max_lat, dbb.max_lat, dbb.min_lat]\nlines!(ax2, dbox_lons, dbox_lats, color=:crimson, linewidth=2)\nscatter!(ax2, [origin.lon], [origin.lat], color=:crimson, markersize=10)\ntext!(ax2, origin.lon + 0.3, origin.lat + 0.3; text=\"Origin\", fontsize=11, align=(:left, :bottom))\n\nfig\n\n\n\n\n\n\nFigure 5.2: A bounding box around scattered points (left) and a destination bounding box showing the area within 500 km of a central point (right).\n\n\n\n\n\n\nAccepts Any AbstractFixedCoords\nAll functions accept any AbstractFixedCoords type, not just LLA. ECEF and UTM coordinates are converted automatically:\n\necef_pts = [ECEF(p, WGS84) for p in pts]\nboundingbox(ecef_pts)\n\nBoundingBox(lon=[-74.5, -73.2], lat=[40.00000000000001, 40.9])",
+    "crumbs": [
+      "Docs",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Areas and Bounding Boxes</span>"
     ]
   },
   {
@@ -73,7 +315,7 @@
     "text": "Types",
     "crumbs": [
       "API",
-      "<span class='chapter-number'>2</span>  <span class='chapter-title'>API</span>"
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>API</span>"
     ]
   },
   {
@@ -81,10 +323,10 @@
     "href": "api.html#types",
     "title": "API",
     "section": "",
-    "text": "Config\n\n\nConfig\nConfiguration for the package.\n\nFields\n\nname::String: The name to use in greetings.\nverbose::Bool: Whether to print extra information.",
+    "text": "AER\n\n\nAER{T}(az, el, range)\nAzimuth-Elevation-Range coordinates relative to a reference point.\n\nFields\n\naz::T: Azimuth in degrees, clockwise from north [0, 360).\nel::T: Elevation in degrees, up from horizon [−90, 90].\nrange::T: Slant range in meters.\n\nAER(c::ENU)\nConvert ENU to AER coordinates (no datum needed — pure geometry).\nAER(c::LLA, ref::LLA, datum::Datum)\nConvert LLA to AER relative to the reference point ref.\nAER(c::ECEF, ref::LLA, datum::Datum)\nConvert ECEF to AER relative to the reference point ref.\n\n\n\n\n\nAbstractCoords\n\n\nAbstractCoords{T}\nAbstract supertype for all coordinate representations.\n\n\n\n\nAbstractFixedCoords\n\n\nAbstractFixedCoords{T} &lt;: AbstractCoords{T}\nAbstract supertype for coordinate types that represent a fixed position on the ellipsoid and can be converted to LLA using only a Datum (no reference point required).\nSubtypes: LLA, LLARad, ECEF, UTM.\n\n\n\n\nAbstractRelativeCoords\n\n\nAbstractRelativeCoords{T} &lt;: AbstractCoords{T}\nAbstract supertype for coordinate types that are relative to a reference point. These require both a Datum and a reference LLA for conversion.\nSubtypes: ENU, NED, AER.\n\n\n\n\nBoundingBox\n\n\nBoundingBox(min_lon, min_lat, max_lon, max_lat)\nAn axis-aligned bounding box in geodetic coordinates (degrees).\nWhen min_lon &gt; max_lon, the box wraps across the antimeridian.\n\nExamples\njulia&gt; bbox = BoundingBox(-75.0, 40.0, -73.0, 41.0)\nBoundingBox(lon=[-75.0, -73.0], lat=[40.0, 41.0])\n\n\n\n\n\nDatum\n\n\nDatum(name, a, f_inv)\nA geodetic datum defined by an ellipsoid of revolution.\n\nFields\n\nname::String: Human-readable name (e.g. \"WGS 84\").\na::Float64: Semi-major axis in meters (equatorial radius).\nf_inv::Float64: Inverse flattening (1/f). Use Inf for a perfect sphere.\n\n\nExamples\njulia&gt; WGS84\nDatum(\"WGS 84\", a=6.378137e6, 1/f=298.257223563)\n\njulia&gt; semi_major_axis(WGS84)\n6.378137e6\n\njulia&gt; semi_minor_axis(WGS84)\n6.356752314245179e6\n\n\n\n\n\n\nECEF\n\n\nECEF{T}(x, y, z)\nEarth-Centered, Earth-Fixed Cartesian coordinates in meters.\n\nFields\n\nx::T: X-axis (intersection of prime meridian and equator).\ny::T: Y-axis (90° east on the equator).\nz::T: Z-axis (north pole).\n\n\nExamples\njulia&gt; ECEF(6_378_137.0, 0.0, 0.0)\nECEF(x=6.378137e6, y=0.0, z=0.0)\nECEF(c::LLA, datum::Datum)\nConvert geodetic coordinates (degrees) to ECEF Cartesian coordinates.\nECEF(c::LLARad, datum::Datum)\nConvert geodetic coordinates (radians) to ECEF Cartesian coordinates.\nECEF(c::ENU, ref::LLA, datum::Datum)\nConvert ENU coordinates back to ECEF given the reference point ref.\nECEF(c::NED, ref::LLA, datum::Datum)\nConvert NED coordinates back to ECEF given the reference point ref.\nECEF(c::AER, ref::LLA, datum::Datum)\nConvert AER to ECEF given the reference point ref.\n\n\n\n\n\n\nENU\n\n\nENU{T}(e, n, u)\nEast-North-Up local tangent plane coordinates in meters, relative to a reference point.\n\nFields\n\ne::T: East displacement in meters.\nn::T: North displacement in meters.\nu::T: Up displacement in meters.\n\nENU(c::ECEF, ref::LLA, datum::Datum)\nConvert ECEF coordinates to ENU relative to the reference point ref.\nENU(c::LLA, ref::LLA, datum::Datum)\nConvert LLA coordinates to ENU relative to the reference point ref.\nENU(c::AER)\nConvert AER to ENU coordinates (no datum needed — pure geometry).\n\n\n\n\n\nLLA\n\n\nLLA{T}(lon, lat, alt=0)\nGeodetic coordinates: longitude, latitude (degrees), and altitude (meters above ellipsoid).\n\nFields\n\nlon::T: Longitude in degrees (−180, 180].\nlat::T: Latitude in degrees [−90, 90].\nalt::T: Altitude above the ellipsoid in meters.\n\n\nExamples\njulia&gt; LLA(0.0, 0.0)\nLLA(lon=0.0°, lat=0.0°, alt=0.0m)\n\njulia&gt; LLA{Float32}(1, 2, 3)\nLLA(lon=1.0°, lat=2.0°, alt=3.0m)\nLLA(c::ECEF, datum::Datum)\nConvert ECEF Cartesian coordinates to geodetic coordinates (degrees). Uses Bowring’s iterative method.\nLLA(c::ENU, ref::LLA, datum::Datum)\nConvert ENU coordinates to LLA given the reference point ref.\nLLA(c::NED, ref::LLA, datum::Datum)\nConvert NED coordinates to LLA given the reference point ref.\nLLA(c::AER, ref::LLA, datum::Datum)\nConvert AER to LLA given the reference point ref.\nLLA(c::UTM, datum::Datum)\nConvert UTM to LLA.\n\n\n\n\n\n\nLLARad\n\n\nLLARad{T}(lon, lat, alt=0)\nGeodetic coordinates: longitude, latitude (radians), and altitude (meters above ellipsoid).\n\nFields\n\nlon::T: Longitude in radians (−π, π].\nlat::T: Latitude in radians [−π/2, π/2].\nalt::T: Altitude above the ellipsoid in meters.\n\n\nExamples\njulia&gt; LLARad(0.0, 0.0)\nLLARad(lon=0.0 rad, lat=0.0 rad, alt=0.0m)\n\njulia&gt; LLARad(LLA(180.0, 45.0))\nLLARad(lon=3.141592653589793 rad, lat=0.7853981633974483 rad, alt=0.0m)\nLLARad(c::ECEF, datum::Datum)\nConvert ECEF Cartesian coordinates to geodetic coordinates (radians).\n\n\n\n\n\n\nNED\n\n\nNED{T}(n, e, d)\nNorth-East-Down local tangent plane coordinates in meters, relative to a reference point. Standard aviation/aerospace convention.\n\nFields\n\nn::T: North displacement in meters.\ne::T: East displacement in meters.\nd::T: Down displacement in meters.\n\nNED(c::ECEF, ref::LLA, datum::Datum)\nConvert ECEF coordinates to NED relative to the reference point ref.\nNED(c::LLA, ref::LLA, datum::Datum)\nConvert LLA coordinates to NED relative to the reference point ref.\n\n\n\n\n\nUTM\n\n\nUTM{T}(zone, isnorth, easting, northing)\nUniversal Transverse Mercator projected coordinates.\n\nFields\n\nzone::Int: UTM zone number (1–60).\nisnorth::Bool: true for northern hemisphere, false for southern.\neasting::T: Easting in meters.\nnorthing::T: Northing in meters.\n\n!!! note Standard zone determination only. Norway/Svalbard exceptions (zones 32V, 31X–37X) are not handled.\nUTM(c::LLA, datum::Datum; zone=nothing)\nConvert LLA to UTM. Zone is auto-detected from longitude unless specified.",
     "crumbs": [
       "API",
-      "<span class='chapter-number'>2</span>  <span class='chapter-title'>API</span>"
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>API</span>"
     ]
   },
   {
@@ -92,10 +334,10 @@
     "href": "api.html#functions",
     "title": "API",
     "section": "Functions",
-    "text": "Functions\n\n\ngreet\n\n\ngreet()\ngreet(name::String)\nReturn a greeting string. If name is provided, greet that person.\n\nExamples\njulia&gt; greet()\n\"Hello from GeodeticOps!\"\n\njulia&gt; greet(\"Julia\")\n\"Hello, Julia!\"\n\n\n\n\n\ntransform\n\n\ntransform(x::AbstractVector; scale=1.0)\nApply a transformation to x, scaling each element by scale.\n\nExamples\njulia&gt; transform([1, 2, 3]; scale=2.0)\n3-element Vector{Float64}:\n 2.0\n 4.0\n 6.0",
+    "text": "Functions\n\n\nbearing\n\n\nforward_azimuth(a::AbstractFixedCoords, b::AbstractFixedCoords; datum=DEFAULT_DATUM[]) -&gt; Float64\nCompute the forward azimuth (degrees, clockwise from north) from a to b.\n\nExamples\njulia&gt; forward_azimuth(LLA(0.0, 0.0), LLA(1.0, 1.0))\n44.99563948...\n\n\n\n\n\nboundingbox\n\n\nboundingbox(points; datum=DEFAULT_DATUM[]) -&gt; BoundingBox\nCompute the axis-aligned bounding box for a collection of AbstractFixedCoords.\n\nExamples\njulia&gt; pts = [LLA(-74.0, 40.0), LLA(-73.0, 41.0), LLA(-75.0, 40.5)];\n\njulia&gt; boundingbox(pts)\nBoundingBox(lon=[-75.0, -73.0], lat=[40.0, 41.0])\n\n\n\n\n\ndestination_boundingbox\n\n\ndestination_boundingbox(origin::AbstractFixedCoords, dist; datum=DEFAULT_DATUM[]) -&gt; BoundingBox\nCompute the bounding box of all points within dist meters of origin.\n\nExamples\njulia&gt; destination_boundingbox(LLA(0.0, 0.0), 100_000.0)\nBoundingBox(lon=[-0.9, 0.9], lat=[-0.9, 0.9])\n\n\n\n\n\ndistance\n\n\ndistance(a::AbstractFixedCoords, b::AbstractFixedCoords; datum=DEFAULT_DATUM[]) -&gt; Float64\nCompute the geodesic distance in meters between two points using Vincenty’s formula.\n\nExamples\njulia&gt; distance(LLA(-74.006, 40.7128), LLA(-0.1278, 51.5074))\n5.5702e6\n\n\n\n\n\neccentricity\n\n\neccentricity(d::Datum) -&gt; Float64\nReturn the first eccentricity: e = √(2f - f²).\n\n\n\n\neccentricity_sq\n\n\neccentricity_sq(d::Datum) -&gt; Float64\nReturn the first eccentricity squared: e² = 2f - f².\n\n\n\n\nflattening\n\n\nflattening(d::Datum) -&gt; Float64\nReturn the flattening f = 1 / f_inv.\n\n\n\n\nforward_azimuth\n\n\nforward_azimuth(a::AbstractFixedCoords, b::AbstractFixedCoords; datum=DEFAULT_DATUM[]) -&gt; Float64\nCompute the forward azimuth (degrees, clockwise from north) from a to b.\n\nExamples\njulia&gt; forward_azimuth(LLA(0.0, 0.0), LLA(1.0, 1.0))\n44.99563948...\n\n\n\n\n\nforward_geodesic\n\n\nforward_geodesic(origin::AbstractFixedCoords, azimuth, dist; datum=DEFAULT_DATUM[]) -&gt; LLA\nSolve the forward (direct) geodesic problem: given a starting point, an azimuth (degrees, clockwise from north), and a distance (meters), compute the destination point.\n\nExamples\njulia&gt; forward_geodesic(LLA(0.0, 0.0), 90.0, 111_320.0)\nLLA(lon=1.0°, lat=0.0°, alt=0.0m)\n\n\n\n\n\nhaversine\n\n\nhaversine(a::AbstractFixedCoords, b::AbstractFixedCoords; datum=DEFAULT_DATUM[]) -&gt; Float64\nCompute the great-circle distance in meters between two coordinates using the haversine formula. Uses the mean radius R = (2a + b) / 3 of the ellipsoid defined by datum. Altitude is ignored.\nAccepts any AbstractFixedCoords (LLA, LLARad, ECEF, UTM).\n\nExamples\njulia&gt; haversine(LLA(-74.006, 40.7128), LLA(-0.1278, 51.5074))  # ≈ 5570 km\n5.570222e6\n\n\n\n\n\nintermediate_point\n\n\nintermediate_point(a::AbstractFixedCoords, b::AbstractFixedCoords, fraction; datum=DEFAULT_DATUM[]) -&gt; LLA\nReturn the point at the given fraction (0 to 1) along the geodesic from a to b.\n\nExamples\njulia&gt; intermediate_point(LLA(0.0, 0.0), LLA(10.0, 0.0), 0.5)\nLLA(lon=5.0°, lat=0.0°, alt=0.0m)\n\n\n\n\n\nmidpoint\n\n\nmidpoint(a::AbstractFixedCoords, b::AbstractFixedCoords; datum=DEFAULT_DATUM[]) -&gt; LLA\nReturn the midpoint along the geodesic from a to b.\n\nExamples\njulia&gt; midpoint(LLA(0.0, 0.0), LLA(10.0, 0.0))\nLLA(lon=5.0°, lat=0.0°, alt=0.0m)\n\n\n\n\n\npolygon_area\n\n\npolygon_area(points; datum=DEFAULT_DATUM[]) -&gt; Float64\nCompute the area of a polygon on the ellipsoid in square meters. The polygon is defined by an ordered sequence of AbstractFixedCoords vertices. The polygon is implicitly closed (the last vertex connects back to the first).\nUses the spherical excess method with the authalic (equal-area) sphere radius.\n\nExamples\njulia&gt; # Approximate area of a 1°×1° square at the equator (~12,300 km²)\n       pts = [LLA(0, 0), LLA(1, 0), LLA(1, 1), LLA(0, 1)];\n\njulia&gt; polygon_area(pts) / 1e6  # km²\n≈ 12308\n\n\n\n\n\nsemi_major_axis\n\n\nsemi_major_axis(d::Datum) -&gt; Float64\nReturn the semi-major axis (equatorial radius) in meters.\n\n\n\n\nsemi_minor_axis\n\n\nsemi_minor_axis(d::Datum) -&gt; Float64\nReturn the semi-minor axis (polar radius) in meters: b = a * (1 - f).\n\n\n\n\nvincenty_inverse\n\n\nvincenty_inverse(a::AbstractFixedCoords, b::AbstractFixedCoords; datum=DEFAULT_DATUM[])\nSolve the inverse geodesic problem using Vincenty’s iterative method. Returns a NamedTuple with:\n\ndistance: geodesic distance in meters.\nazimuth1: forward azimuth at a (degrees, clockwise from north).\nazimuth2: reverse azimuth at b (degrees, clockwise from north).\n\nAccepts any AbstractFixedCoords (LLA, LLARad, ECEF, UTM).\n\nExamples\njulia&gt; vincenty_inverse(LLA(-74.006, 40.7128), LLA(-0.1278, 51.5074))\n(distance = 5.5702e6, azimuth1 = 51.2, azimuth2 = 107.9)",
     "crumbs": [
       "API",
-      "<span class='chapter-number'>2</span>  <span class='chapter-title'>API</span>"
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>API</span>"
     ]
   },
   {
@@ -103,10 +345,10 @@
     "href": "api.html#constants",
     "title": "API",
     "section": "Constants",
-    "text": "Constants\n\n\nDEFAULT_GREETING\n\n\nString(s::AbstractString)\nCreate a new String from an existing AbstractString.\nString(v::AbstractVector{UInt8})\nCreate a new String object using the data buffer from byte vector v. If v is a Vector{UInt8} it will be truncated to zero length and future modification of v cannot affect the contents of the resulting string. To avoid truncation of Vector{UInt8} data, use String(copy(v)); for other AbstractVector types, String(v) already makes a copy.\nWhen possible, the memory of v will be used without copying when the String object is created. This is guaranteed to be the case for byte vectors returned by take! on a writable IOBuffer and by calls to read(io, nb). This allows zero-copy conversion of I/O data to strings. In other cases, Vector{UInt8} data may be copied, but v is truncated anyway to guarantee consistent behavior.\nString &lt;: AbstractString\nThe default string type in Julia, used by e.g. string literals.\nStrings are immutable sequences of Chars. A String is stored internally as a contiguous byte array, and while they are interpreted as being UTF-8 encoded, they can be composed of any byte sequence. Use isvalid to validate that the underlying byte sequence is valid as UTF-8.",
+    "text": "Constants\n\n\nCLARKE1866\n\n\nDatum(name, a, f_inv)\nA geodetic datum defined by an ellipsoid of revolution.\n\nFields\n\nname::String: Human-readable name (e.g. \"WGS 84\").\na::Float64: Semi-major axis in meters (equatorial radius).\nf_inv::Float64: Inverse flattening (1/f). Use Inf for a perfect sphere.\n\n\nExamples\njulia&gt; WGS84\nDatum(\"WGS 84\", a=6.378137e6, 1/f=298.257223563)\n\njulia&gt; semi_major_axis(WGS84)\n6.378137e6\n\njulia&gt; semi_minor_axis(WGS84)\n6.356752314245179e6\n\n\n\n\n\n\nDEFAULT_DATUM\n\n\nNo documentation found for private binding Base.RefValue.\n\nSummary\nmutable struct Base.RefValue{T}\n\n\nFields\nx :: T\n\n\nSupertype Hierarchy\nBase.RefValue{T} &lt;: Ref{T} &lt;: Any\n\n\n\n\n\nGRS80\n\n\nDatum(name, a, f_inv)\nA geodetic datum defined by an ellipsoid of revolution.\n\nFields\n\nname::String: Human-readable name (e.g. \"WGS 84\").\na::Float64: Semi-major axis in meters (equatorial radius).\nf_inv::Float64: Inverse flattening (1/f). Use Inf for a perfect sphere.\n\n\nExamples\njulia&gt; WGS84\nDatum(\"WGS 84\", a=6.378137e6, 1/f=298.257223563)\n\njulia&gt; semi_major_axis(WGS84)\n6.378137e6\n\njulia&gt; semi_minor_axis(WGS84)\n6.356752314245179e6\n\n\n\n\n\n\nWGS72\n\n\nDatum(name, a, f_inv)\nA geodetic datum defined by an ellipsoid of revolution.\n\nFields\n\nname::String: Human-readable name (e.g. \"WGS 84\").\na::Float64: Semi-major axis in meters (equatorial radius).\nf_inv::Float64: Inverse flattening (1/f). Use Inf for a perfect sphere.\n\n\nExamples\njulia&gt; WGS84\nDatum(\"WGS 84\", a=6.378137e6, 1/f=298.257223563)\n\njulia&gt; semi_major_axis(WGS84)\n6.378137e6\n\njulia&gt; semi_minor_axis(WGS84)\n6.356752314245179e6\n\n\n\n\n\n\nWGS84\n\n\nDatum(name, a, f_inv)\nA geodetic datum defined by an ellipsoid of revolution.\n\nFields\n\nname::String: Human-readable name (e.g. \"WGS 84\").\na::Float64: Semi-major axis in meters (equatorial radius).\nf_inv::Float64: Inverse flattening (1/f). Use Inf for a perfect sphere.\n\n\nExamples\njulia&gt; WGS84\nDatum(\"WGS 84\", a=6.378137e6, 1/f=298.257223563)\n\njulia&gt; semi_major_axis(WGS84)\n6.378137e6\n\njulia&gt; semi_minor_axis(WGS84)\n6.356752314245179e6",
     "crumbs": [
       "API",
-      "<span class='chapter-number'>2</span>  <span class='chapter-title'>API</span>"
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>API</span>"
     ]
   },
   {
@@ -117,7 +359,7 @@
     "text": "Unreleased",
     "crumbs": [
       "Resources",
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Changelog</span>"
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Changelog</span>"
     ]
   }
 ]
